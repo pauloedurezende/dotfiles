@@ -1,0 +1,20 @@
+# 1Password SSH Agent Configuration
+# This file configures which SSH keys from specific vaults should be available to the SSH agent
+#
+# SECURITY NOTE: This template uses encrypted vault variables for security.
+# SSH key references (item_id, vault_id) remain dynamic to protect sensitive 1Password data.
+# Configure SSH key variables directly in group_vars/all/vault.yml
+
+{% if vault_onepassword_ssh_key_item_id is defined and vault_onepassword_ssh_key_vault_id is defined %}
+[[ssh-keys]]
+item = "{{ vault_onepassword_ssh_key_item_id }}"
+vault = "{{ vault_onepassword_ssh_key_vault_id }}"
+{% else %}
+# No SSH key configured in vault
+# Configure SSH key variables directly in group_vars/all/vault.yml
+# Use 'make vault-edit' to add your configuration
+#
+# Example vault configuration:
+# vault_onepassword_ssh_key_item_id: "abcd1234efgh5678"  # Required: item ID
+# vault_onepassword_ssh_key_vault_id: "work_vault_id"    # Required: vault ID
+{% endif %}

@@ -1,0 +1,25 @@
+---
+- name: Import private key from vault
+  ansible.builtin.shell: >
+    set -o pipefail;
+    echo "{{ gpg_private_key }}" | gpg --batch --import
+  when: gpg_import_key and gpg_private_key is defined
+  register: import_result
+  changed_when: "'imported' in import_result.stderr"
+  failed_when: >
+    import_result.rc != 0 and
+    'already in secret keyring' not in import_result.stderr
+  no_log: true
+
+- name: Set ultimate trust for imported key
+  ansible.builtin.shell: >
+    set -o pipefail;
+    gpg --list-secret-keys --fingerprint --with-colons |
+    sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' |
+    head -1 | gpg --import-ownertrust
+  when:
+    - gpg_import_key
+    - gpg_private_key is defined
+    - gpg_key_trust_level == "ultimate"
+  register: trust_result
+  changed_when: "'imported' in trust_result.stderr"

@@ -1,0 +1,26 @@
+---
+vscode_enabled: true
+vscode_settings_enabled: true
+
+vscode_extensions:
+  - adpyke.codesnap
+  - dbaeumer.vscode-eslint
+  - dsznajder.es7-react-js-snippets
+  - eamodio.gitlens
+  - editorconfig.editorconfig
+  - esbenp.prettier-vscode
+  - github.github-vscode-theme
+  - github.vscode-github-actions
+  - github.vscode-pull-request-github
+  - ibm.output-colorizer
+  - irongeek.vscode-env
+  - miguelsolorio.fluent-icons
+  - nicoespeon.abracadabra
+  - orta.vscode-jest
+  - pkief.material-icon-theme
+  - redhat.vscode-yaml
+  - styled-components.vscode-styled-components
+  - tyriar.sort-lines
+  - visualstudioexptteam.intellicode-api-usage-examples
+  - visualstudioexptteam.vscodeintellicode
+  - wallabyjs.quokka-vscode

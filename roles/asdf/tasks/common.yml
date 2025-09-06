@@ -1,0 +1,12 @@
+---
+- name: Create asdf configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/asdf"
+    state: directory
+    mode: '0755'
+
+- name: Install asdf configuration
+  ansible.builtin.copy:
+    src: asdfrc
+    dest: "{{ dotfiles_home }}/.asdfrc"
+    mode: '0644'

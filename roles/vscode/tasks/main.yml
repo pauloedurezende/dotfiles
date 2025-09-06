@@ -1,0 +1,12 @@
+---
+- name: Install VS Code on macOS
+  ansible.builtin.include_tasks: macos.yml
+  when: is_macos and vscode_enabled
+
+- name: Install VS Code on Linux
+  ansible.builtin.include_tasks: linux.yml
+  when: is_linux and vscode_enabled
+
+- name: Configure VS Code settings
+  ansible.builtin.include_tasks: common.yml
+  when: vscode_enabled

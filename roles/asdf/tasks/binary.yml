@@ -1,0 +1,67 @@
+---
+- name: Install asdf dependencies for binary installation
+  ansible.builtin.package:
+    name:
+      - curl
+      - git
+      - tar
+    state: present
+  become: true
+  when: is_linux
+
+- name: Detect system architecture
+  ansible.builtin.set_fact:
+    asdf_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"  # yamllint disable-line rule:line-length
+
+- name: Set OS name for download URL
+  ansible.builtin.set_fact:
+    asdf_os: "{{ 'darwin' if is_macos else 'linux' }}"
+
+- name: Ensure binary installation directory exists
+  ansible.builtin.file:
+    path: "{{ asdf_binary_install_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Set binary download URL
+  ansible.builtin.set_fact:
+    asdf_binary_url: "{{ asdf_binary_base_url }}/{{ asdf_version }}/asdf-{{ asdf_version }}-{{ asdf_os }}-{{ asdf_arch }}.tar.gz"  # yamllint disable-line rule:line-length
+
+- name: Download asdf binary archive
+  ansible.builtin.get_url:
+    url: "{{ asdf_binary_url }}"
+    dest: "/tmp/asdf-{{ asdf_version }}.tar.gz"
+    mode: '0644'
+
+- name: Remove existing asdf binary (force clean installation)
+  ansible.builtin.file:
+    path: "{{ asdf_binary_install_path }}/asdf"
+    state: absent
+
+- name: Extract asdf binary (forced replacement)
+  ansible.builtin.unarchive:
+    src: "/tmp/asdf-{{ asdf_version }}.tar.gz"
+    dest: "{{ asdf_binary_install_path }}"
+    remote_src: true
+
+- name: Ensure asdf binary is executable
+  ansible.builtin.file:
+    path: "{{ asdf_binary_install_path }}/asdf"
+    mode: '0755'
+
+- name: Set asdf directory for binary installation
+  ansible.builtin.set_fact:
+    asdf_dir: "{{ dotfiles_home }}/.asdf"
+    asdf_binary_path: "{{ asdf_binary_install_path }}/asdf"
+
+- name: Create asdf data directory
+  ansible.builtin.file:
+    path: "{{ asdf_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create asdf shims directory
+  ansible.builtin.file:
+    path: "{{ asdf_dir }}/shims"
+    state: directory
+    mode: '0755'

@@ -1,0 +1,105 @@
+{
+  // General Settings
+  "breadcrumbs.enabled": false,
+  "debug.toolBarLocation": "commandCenter",
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.accessibilitySupport": "off",
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+  "editor.fontFamily": "'JetBrainsMono Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 15,
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.lineHeight": 1.8,
+  "editor.minimap.enabled": false,
+  "editor.parameterHints.enabled": false,
+  "editor.renderLineHighlight": "gutter",
+  "editor.rulers": [80, 120],
+  "editor.scrollbar.vertical": "visible",
+  "editor.semanticHighlighting.enabled": false,
+  "editor.stickyScroll.enabled": false,
+  "editor.suggestSelection": "first",
+  "editor.tabSize": 2,
+  "explorer.compactFolders": false,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.fileNesting.enabled": false,
+  "extensions.ignoreRecommendations": true,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "git.enableSmartCommit": true,
+  "git.openRepositoryInParentFolders": "always",
+  "gitlens.codeLens.authors.enabled": false,
+  "gitlens.codeLens.recentChange.enabled": false,
+  "material-icon-theme.activeIconPack": "",
+  "material-icon-theme.folders.theme": "classic",
+  "security.promptForLocalFileProtocolHandling": false,
+  "security.workspace.trust.untrustedFiles": "newWindow",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font Mono",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontWeight": "bold",
+  "terminal.integrated.gpuAcceleration": "off",
+  "terminal.integrated.showExitAlert": false,
+  "update.mode": "start",
+  "update.showReleaseNotes": false,
+  "window.commandCenter": true,
+  "window.titleBarStyle": "custom",
+  "workbench.activityBar.location": "default",
+  "workbench.colorTheme": "GitHub Dark",
+  "workbench.editor.labelFormat": "short",
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.productIconTheme": "fluent-icons",
+  "workbench.sideBar.location": "right",
+  "workbench.statusBar.visible": true,
+  "workbench.tree.enableStickyScroll": false,
+  "workbench.tree.indent": 12,
+  "workbench.tree.renderIndentGuides": "none",
+  
+  // Settings for Emmet and ESLint in Visual Studio Code.
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  "emmet.syntaxProfiles": {
+    "javascript": "jsx",
+    "typescript": "tsx"
+  },
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.useInlineCompletions": true,
+  "eslint.validate": ["javascript", "javascriptreact"],
+
+  // Sets up file associations and exclusions
+  "files.associations": {
+    ".env.*": "dotenv",
+    "*.css": "css"
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.git": true,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/CVS": true,
+    "node_modules": true
+  },
+
+  // JavaScript & TypeScript Specific Settings
+  "javascript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.tsserver.log": "off",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  
+  // Override Language Specific Settings
+  "[javascript]": { "editor.defaultFormatter": "vscode.typescript-language-features" },
+  "[json]": { "editor.defaultFormatter": "vscode.json-language-features" },
+  "[jsonc]": { "editor.defaultFormatter": "vscode.json-language-features" },
+  "[prisma]": { "editor.formatOnSave": true },
+  
+  // Others
+  "chat.agent.enabled": true,
+  "github.copilot.chat.agent.thinkingTool": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "github.copilot.chat.codesearch.enabled": true,
+  "githubPullRequests.pullBranch": "never",
+  "jest.runMode": "on-demand"
+}

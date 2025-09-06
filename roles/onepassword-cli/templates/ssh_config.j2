@@ -1,0 +1,22 @@
+# SSH Configuration managed by Ansible
+# This file configures SSH to use 1Password SSH agent
+#
+# Reference: https://developer.1password.com/docs/ssh/
+# NOTE: OS-specific paths remain dynamic for cross-platform compatibility.
+# IdentityAgent paths vary between macOS and Linux systems.
+
+Host *
+{% if ansible_os_family == 'Darwin' %}
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+    UseKeychain yes
+{% else %}
+    IdentityAgent ~/.1password/agent.sock
+{% endif %}
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# GitHub configuration
+Host github.com
+    HostName github.com
+    User git
+    Port 22

@@ -1,0 +1,88 @@
+---
+- name: Install build dependencies
+  ansible.builtin.apt:
+    name:
+      - libgtk-4-dev
+      - libadwaita-1-dev
+      - build-essential
+      - git
+      - curl
+    state: present
+  become: true
+
+- name: Check if Zig is installed
+  ansible.builtin.command: which zig
+  register: zig_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Zig via snap
+  ansible.builtin.command: snap install --beta zig --classic
+  become: true
+  when: zig_check.rc != 0
+  changed_when: true
+
+- name: Check if Ghostty is already installed
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.local/bin/ghostty"
+  register: ghostty_installed
+
+- name: Create temporary build directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: ghostty_build_
+  register: build_dir
+  when: not ghostty_installed.stat.exists
+
+- name: Download Ghostty source
+  ansible.builtin.git:
+    repo: https://github.com/ghostty-org/ghostty.git
+    dest: "{{ build_dir.path }}"
+    depth: 1
+    version: main
+    single_branch: true
+  when: not ghostty_installed.stat.exists
+
+- name: Build Ghostty
+  ansible.builtin.command:
+    cmd: zig build -p {{ dotfiles_home }}/.local -Doptimize=ReleaseFast
+    chdir: "{{ build_dir.path }}"
+  when: not ghostty_installed.stat.exists
+  changed_when: true
+
+- name: Clean up build directory
+  ansible.builtin.file:
+    path: "{{ build_dir.path }}"
+    state: absent
+  when: build_dir is defined and build_dir.path is defined
+
+- name: Ensure ~/.local/bin is in PATH
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.profile"
+    line: 'export PATH="$HOME/.local/bin:$PATH"'
+    create: true
+    mode: '0644'
+
+- name: Create desktop entry for Ghostty
+  ansible.builtin.copy:
+    dest: "{{ dotfiles_home }}/.local/share/applications/ghostty.desktop"
+    content: |
+      [Desktop Entry]
+      Name=Ghostty
+      Comment=GPU-accelerated terminal emulator
+      Exec={{ dotfiles_home }}/.local/bin/ghostty
+      Icon=utilities-terminal
+      Terminal=false
+      Type=Application
+      Categories=System;TerminalEmulator;
+    mode: '0644'
+
+- name: Verify Ghostty installation
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/ghostty --version"
+  register: ghostty_version
+  changed_when: false
+  failed_when: ghostty_version.rc != 0
+
+- name: Display Ghostty version
+  ansible.builtin.debug:
+    msg: "Ghostty {{ ghostty_version.stdout }} installed successfully"

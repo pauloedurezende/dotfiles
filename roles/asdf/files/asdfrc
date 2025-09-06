@@ -1,0 +1,13 @@
+# asdf configuration file
+
+# Enable support for legacy version files (.ruby-version, .node-version, .python-version, etc)
+legacy_version_file = yes
+
+# Configure the asdf install command to keep the downloaded files
+always_keep_download = no
+
+# Configure how long (in minutes) the plugin repository will be cached
+plugin_repository_last_check_duration = 60
+
+# Disable/enable short name repository
+disable_plugin_short_name_repository = no

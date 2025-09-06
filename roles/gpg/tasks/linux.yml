@@ -1,0 +1,16 @@
+---
+# GPG Installation and Configuration for Debian/Ubuntu
+
+- name: Install GPG and pinentry packages
+  ansible.builtin.apt:
+    name:
+      - gnupg2
+      - pinentry-gtk2
+      - pinentry-curses
+    state: present
+    update_cache: true
+  become: true
+
+- name: Set pinentry program path for Linux
+  ansible.builtin.set_fact:
+    gpg_pinentry_program: "/usr/bin/pinentry-gtk-2"

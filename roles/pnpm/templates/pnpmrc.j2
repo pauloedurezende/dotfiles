@@ -1,0 +1,45 @@
+# {{ ansible_managed }}
+# pnpm configuration file
+
+# Store directory
+store-dir={{ dotfiles_home }}/.local/share/pnpm
+
+# Cache directory
+cache-dir={{ dotfiles_home }}/.cache/pnpm
+
+# State directory
+state-dir={{ dotfiles_home }}/.local/state/pnpm
+
+# Registry
+registry=https://registry.npmjs.org/
+
+# Auto install peers
+auto-install-peers=true
+
+# Strict peer dependencies
+strict-peer-dependencies=false
+
+# Package import method
+package-import-method=auto
+
+# Hoist pattern
+hoist-pattern=*
+
+# Shamefully hoist
+shamefully-hoist=false
+
+# Side effects cache
+side-effects-cache=true
+
+# Global packages location
+global-bin-dir={{ dotfiles_home }}/.local/bin
+
+# Logging configuration
+loglevel=info
+
+# Performance optimizations
+resolution-mode=highest
+prefer-frozen-lockfile=true
+
+# Security
+audit-level=moderate

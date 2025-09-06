@@ -1,0 +1,63 @@
+---
+- name: Install dependencies for VS Code
+  ansible.builtin.apt:
+    name:
+      - wget
+      - gpg
+      - software-properties-common
+      - apt-transport-https
+    state: present
+    update_cache: true
+  become: true
+
+- name: Download Microsoft GPG key
+  ansible.builtin.get_url:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    dest: /tmp/microsoft.asc
+    mode: '0644'
+
+- name: Add Microsoft GPG key
+  ansible.builtin.shell: |
+    set -o pipefail
+    cat /tmp/microsoft.asc | gpg --dearmor > /tmp/packages.microsoft.gpg
+    install -o root -g root -m 644 /tmp/packages.microsoft.gpg \
+      /etc/apt/trusted.gpg.d/
+  become: true
+  changed_when: true
+
+- name: Add VS Code repository
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [arch=amd64,arm64,armhf
+      signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg]
+      https://packages.microsoft.com/repos/code stable main
+    state: present
+    filename: vscode
+  become: true
+
+- name: Install Visual Studio Code
+  ansible.builtin.apt:
+    name: code
+    state: present
+    update_cache: true
+  become: true
+
+- name: Clean up temporary files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/microsoft.asc
+    - /tmp/packages.microsoft.gpg
+
+- name: Verify VS Code installation
+  ansible.builtin.command: code --version
+  register: vscode_version
+  changed_when: false
+  failed_when: vscode_version.rc != 0
+
+- name: Display VS Code version
+  ansible.builtin.debug:
+    msg: >
+      Visual Studio Code {{ vscode_version.stdout_lines[0] }}
+      installed successfully

@@ -1,0 +1,16 @@
+---
+# GPG Role Main Tasks
+
+- name: Include macOS-specific tasks
+  ansible.builtin.include_tasks: macos.yml
+  when: is_macos
+
+- name: Include Linux-specific tasks
+  ansible.builtin.include_tasks: linux.yml
+  when: is_linux
+
+- name: Include common GPG configuration tasks
+  ansible.builtin.include_tasks: common.yml
+
+- name: Include GPG key management tasks
+  ansible.builtin.include_tasks: keys.yml

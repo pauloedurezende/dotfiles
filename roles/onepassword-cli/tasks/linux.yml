@@ -1,0 +1,47 @@
+---
+- name: Add 1Password apt repository key
+  ansible.builtin.get_url:
+    url: https://downloads.1password.com/linux/keys/1password.asc
+    dest: /tmp/1password.asc
+    mode: '0644'
+
+- name: Install 1Password apt repository key
+  ansible.builtin.shell: |
+    set -o pipefail
+    gpg --dearmor < /tmp/1password.asc | \
+      sudo tee /usr/share/keyrings/1password-archive-keyring.gpg > /dev/null
+  args:
+    executable: /bin/bash
+    creates: /usr/share/keyrings/1password-archive-keyring.gpg
+
+- name: Add 1Password apt repository
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [arch=amd64
+      signed-by=/usr/share/keyrings/1password-archive-keyring.gpg]
+      https://downloads.1password.com/linux/debian/amd64 stable main
+    filename: 1password
+    state: present
+  become: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install 1Password CLI
+  ansible.builtin.apt:
+    name: "1password-cli"
+    state: present
+  become: true
+
+- name: Verify 1Password CLI installation
+  ansible.builtin.command: op --version
+  register: op_version
+  changed_when: false
+  failed_when: op_version.rc != 0
+
+- name: Clean up temporary key file
+  ansible.builtin.file:
+    path: /tmp/1password.asc
+    state: absent

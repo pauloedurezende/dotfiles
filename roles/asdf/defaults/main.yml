@@ -1,0 +1,6 @@
+---
+asdf_version: "v0.18.0"
+asdf_dir: "{{ dotfiles_home }}/.asdf"
+
+asdf_binary_base_url: "https://github.com/asdf-vm/asdf/releases/download"
+asdf_binary_install_path: "{{ dotfiles_home }}/.local/bin"

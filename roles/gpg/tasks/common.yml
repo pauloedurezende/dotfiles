@@ -1,0 +1,32 @@
+---
+- name: Create configuration directory
+  ansible.builtin.file:
+    path: "{{ gpg_config_dir }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ dotfiles_user }}"
+
+- name: Install GPG configuration
+  ansible.builtin.copy:
+    src: gpg.conf
+    dest: "{{ gpg_config_dir }}/gpg.conf"
+    mode: "0600"
+    owner: "{{ dotfiles_user }}"
+    backup: true
+
+- name: Apply agent configuration template
+  ansible.builtin.template:
+    src: gpg-agent.conf.j2
+    dest: "{{ gpg_config_dir }}/gpg-agent.conf"
+    mode: "0600"
+    owner: "{{ dotfiles_user }}"
+    backup: true
+  notify: Restart gpg-agent
+
+- name: Set directory permissions
+  ansible.builtin.file:
+    path: "{{ gpg_config_dir }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ dotfiles_user }}"
+    recurse: true

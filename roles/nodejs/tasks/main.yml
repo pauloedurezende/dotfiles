@@ -1,0 +1,45 @@
+---
+- name: Check if asdf is installed
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.local/bin/asdf"
+  register: asdf_check
+  failed_when: not asdf_check.stat.exists
+
+- name: Import GPG keys for Node.js verification
+  ansible.builtin.shell: |
+    set -o pipefail
+    export PATH="{{ asdf_binary_install_path }}:${PATH}"
+    export ASDF_DATA_DIR="{{ asdf_dir }}"
+    bash -c '${ASDF_DATA_DIR}/plugins/nodejs/bin/import-release-team-keyring'
+  args:
+    executable: /bin/bash
+  register: gpg_import_result
+  changed_when: "'imported' in gpg_import_result.stdout"
+  failed_when: false
+
+- name: Manage Node.js via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: nodejs
+      url: "{{ nodejs_plugin_url }}"
+      versions:
+        - "{{ nodejs_version }}"
+      global: "{{ nodejs_version }}"
+
+- name: Create npm config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/npm"
+    state: directory
+    mode: '0755'
+  when: nodejs_npm_config_enabled
+
+- name: Generate npm configuration
+  ansible.builtin.template:
+    src: npmrc.j2
+    dest: "{{ dotfiles_home }}/.npmrc"
+    mode: '0644'
+    backup: true
+  when: nodejs_npm_config_enabled

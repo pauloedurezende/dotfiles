@@ -1,0 +1,62 @@
+---
+- name: Create fonts directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.local/share/fonts"
+    state: directory
+    mode: '0755'
+
+- name: Check if JetBrains Mono Nerd Font already exists
+  ansible.builtin.find:
+    paths: "{{ dotfiles_home }}/.local/share/fonts"
+    patterns: "*JetBrains*Nerd*Font*"
+    recurse: true
+  register: existing_font
+  when: fonts_jetbrains_mono_nerd_enabled
+
+- name: Create temporary directory for font download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: "_fonts"
+  register: temp_font_dir
+  when: fonts_jetbrains_mono_nerd_enabled and existing_font.files | length == 0
+
+- name: Download and extract JetBrains Mono Nerd Font
+  ansible.builtin.unarchive:
+    src: "{{ fonts_jetbrains_mono_nerd_download_url }}"
+    dest: "{{ temp_font_dir.path }}"
+    remote_src: true
+    creates: "{{ temp_font_dir.path }}/JetBrainsMonoNerdFont-Regular.ttf"
+  when: fonts_jetbrains_mono_nerd_enabled and existing_font.files | length == 0
+
+- name: Install JetBrains Mono Nerd Font files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ dotfiles_home }}/.local/share/fonts/"
+    mode: '0644'
+  with_fileglob:
+    - "{{ temp_font_dir.path }}/*.ttf"
+  when: fonts_jetbrains_mono_nerd_enabled and existing_font.files | length == 0
+
+- name: Clean up temporary directory
+  ansible.builtin.file:
+    path: "{{ temp_font_dir.path }}"
+    state: absent
+  when: >
+    fonts_jetbrains_mono_nerd_enabled and existing_font.files | length == 0
+    and temp_font_dir is defined
+
+- name: Update font cache
+  ansible.builtin.command: fc-cache -fv
+  changed_when: true
+  when: fonts_refresh_cache and fonts_jetbrains_mono_nerd_enabled
+
+- name: Verify font installation
+  ansible.builtin.shell: |
+    set -o pipefail
+    fc-list | grep -i "jetbrains mono nerd"
+  args:
+    executable: /bin/bash
+  register: font_verify
+  changed_when: false
+  failed_when: false
+  when: fonts_jetbrains_mono_nerd_enabled

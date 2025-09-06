@@ -1,0 +1,8 @@
+---
+# asdf Role Main Tasks
+
+- name: Install asdf binary
+  ansible.builtin.include_tasks: binary.yml
+
+- name: Configure asdf
+  ansible.builtin.include_tasks: common.yml

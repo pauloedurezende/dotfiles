@@ -1,0 +1,52 @@
+---
+- name: Development Environment Configuration
+  hosts: local
+  gather_facts: true
+
+  pre_tasks:
+    - name: Check if running on macOS
+      ansible.builtin.set_fact:
+        is_macos: "{{ ansible_distribution == 'MacOSX' }}"
+      tags: [always, system]
+    - name: Check if running on Linux
+      ansible.builtin.set_fact:
+        is_linux: "{{ ansible_distribution in ['Ubuntu', 'Debian'] }}"
+      tags: [always, system]
+
+  roles:
+    - role: homebrew
+      tags: [homebrew, package-managers]
+    - role: fonts
+      tags: [fonts, ui, development]
+    - role: zsh
+      tags: [zsh, shell, development]
+    - role: gpg
+      tags: [gpg, security]
+    - role: git
+      tags: [git, development]
+    - role: asdf
+      tags: [asdf, version-manager, development]
+    - role: tmux
+      tags: [tmux, tools, development]
+    - role: bat
+      tags: [bat, tools, development]
+    - role: fzf
+      tags: [fzf, tools, development]
+    - role: zoxide
+      tags: [zoxide, tools, development]
+    - role: eza
+      tags: [eza, tools, development]
+    - role: nodejs
+      tags: [nodejs, development, javascript]
+    - role: yarn
+      tags: [yarn, development, javascript, package-manager]
+    - role: pnpm
+      tags: [pnpm, development, javascript, package-manager]
+    - role: github-cli
+      tags: [github-cli, development, git, github]
+    - role: onepassword-cli
+      tags: [onepassword-cli, security, ssh]
+    - role: ghostty
+      tags: [ghostty, terminal, development]
+    - role: vscode
+      tags: [vscode, development, ide, editor]

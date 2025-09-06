@@ -1,0 +1,40 @@
+---
+- name: Check if asdf is installed
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.local/bin/asdf"
+  register: asdf_check
+  failed_when: not asdf_check.stat.exists
+
+- name: Manage Yarn via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: yarn
+      url: "{{ yarn_plugin_url }}"
+      versions:
+        - "{{ yarn_version }}"
+      global: "{{ yarn_version }}"
+
+
+- name: Generate yarn configuration
+  ansible.builtin.template:
+    src: yarnrc.j2
+    dest: "{{ dotfiles_home }}/.yarnrc"
+    mode: '0644'
+    backup: true
+  when: yarn_config_enabled
+
+- name: Enable corepack for yarn management
+  ansible.builtin.shell: |
+    set -o pipefail
+    export PATH="{{ asdf_binary_install_path }}:${PATH}"
+    export ASDF_DATA_DIR="{{ asdf_dir }}"
+    corepack enable yarn
+  args:
+    executable: /bin/bash
+  register: corepack_result
+  changed_when: corepack_result.rc == 0
+  failed_when: false
+  when: yarn_corepack_enabled

@@ -1,0 +1,9 @@
+---
+github_cli_version: "latest"
+github_cli_plugin_url: "https://github.com/bartlomiejdanek/asdf-github-cli"
+github_cli_config_enabled: true
+github_cli_extensions_enabled: true
+
+github_cli_extensions:
+  - "github/gh-copilot"
+  - "dlvhdr/gh-dash"

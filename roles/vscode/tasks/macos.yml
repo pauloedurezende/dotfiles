@@ -1,0 +1,23 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: homebrew_check
+  changed_when: false
+  failed_when: homebrew_check.rc != 0
+
+- name: Install Visual Studio Code via Homebrew Cask
+  community.general.homebrew_cask:
+    name: visual-studio-code
+    state: present
+
+- name: Verify VS Code installation
+  ansible.builtin.command: code --version
+  register: vscode_version
+  changed_when: false
+  failed_when: vscode_version.rc != 0
+
+- name: Display VS Code version
+  ansible.builtin.debug:
+    msg: >
+      Visual Studio Code {{ vscode_version.stdout_lines[0] }}
+      installed successfully

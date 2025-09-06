@@ -1,0 +1,94 @@
+---
+- name: Install Git package
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+  become: true
+
+- name: Check if git-delta is installed
+  ansible.builtin.command: which delta
+  register: delta_installed
+  failed_when: false
+  changed_when: false
+
+- name: Download and install git-delta
+  when: delta_installed.rc != 0
+  block:
+    - name: Get latest delta release info
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/dandavison/delta/releases/latest
+        method: GET
+      register: delta_release
+
+    - name: Download git-delta deb package
+      ansible.builtin.get_url:
+        url: >-
+          {{
+            delta_release.json.assets
+            | selectattr('name', 'match', '.*amd64.deb$')
+            | map(attribute='browser_download_url')
+            | first
+          }}
+        dest: "/tmp/git-delta.deb"
+        mode: '0644'
+
+    - name: Install git-delta package
+      ansible.builtin.apt:
+        deb: "/tmp/git-delta.deb"
+        state: present
+      become: true
+
+    - name: Remove downloaded package
+      ansible.builtin.file:
+        path: "/tmp/git-delta.deb"
+        state: absent
+
+- name: Check if lazygit is installed
+  ansible.builtin.command: which lazygit
+  register: lazygit_installed
+  failed_when: false
+  changed_when: false
+
+- name: Download and install lazygit
+  when: lazygit_installed.rc != 0
+  block:
+    - name: Get latest lazygit release info
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/jesseduffield/lazygit/releases/latest
+        method: GET
+      register: lazygit_release
+
+    - name: Download lazygit tarball
+      ansible.builtin.get_url:
+        url: >-
+          {{
+            lazygit_release.json.assets
+            | selectattr('name', 'match', '.*Linux_x86_64.tar.gz$')
+            | map(attribute='browser_download_url')
+            | first
+          }}
+        dest: "/tmp/lazygit.tar.gz"
+        mode: '0644'
+
+    - name: Extract lazygit
+      ansible.builtin.unarchive:
+        src: "/tmp/lazygit.tar.gz"
+        dest: "/tmp"
+        remote_src: true
+
+    - name: Install lazygit binary
+      ansible.builtin.copy:
+        src: "/tmp/lazygit"
+        dest: "/usr/local/bin/lazygit"
+        mode: '0755'
+        remote_src: true
+      become: true
+
+    - name: Clean up lazygit files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/tmp/lazygit.tar.gz"
+        - "/tmp/lazygit"

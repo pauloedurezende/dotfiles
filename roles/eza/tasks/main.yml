@@ -1,0 +1,32 @@
+---
+- name: Check if asdf is installed
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.local/bin/asdf"
+  register: asdf_check
+  failed_when: not asdf_check.stat.exists
+
+- name: Manage eza via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: eza
+      url: "{{ eza_plugin_url }}"
+      versions:
+        - "{{ eza_version }}"
+      global: "{{ eza_version }}"
+
+- name: Create eza config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/eza"
+    state: directory
+    mode: '0755'
+  when: eza_config_enabled
+
+- name: Install eza aliases for zsh
+  ansible.builtin.copy:
+    src: eza_aliases.zsh
+    dest: "{{ dotfiles_home }}/.config/eza/aliases.zsh"
+    mode: '0644'
+  when: eza_aliases_enabled

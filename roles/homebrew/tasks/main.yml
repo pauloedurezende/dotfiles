@@ -1,0 +1,22 @@
+---
+- name: Check if Homebrew is installed
+  ansible.builtin.stat:
+    path: "{{ homebrew_bin_path }}/brew"
+  register: homebrew_installed
+  when: is_macos
+
+- name: Install Homebrew package manager
+  ansible.builtin.shell: |
+    /bin/bash -c "$(curl -fsSL \
+      https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  when: is_macos and not homebrew_installed.stat.exists
+  changed_when: true
+  retries: 3
+  delay: 5
+  environment:
+    NONINTERACTIVE: "1"
+
+- name: Verify installation
+  ansible.builtin.command: brew --version
+  changed_when: false
+  when: is_macos

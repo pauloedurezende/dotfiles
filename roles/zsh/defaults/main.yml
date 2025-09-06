@@ -1,0 +1,12 @@
+---
+zsh_zinit_enabled: true
+zsh_zinit_repo: "https://github.com/zdharma-continuum/zinit.git"
+zsh_zinit_home: "{{ dotfiles_home }}/.local/share/zinit/zinit.git"
+
+zsh_p10k_enabled: true
+zsh_p10k_instant_prompt: true
+
+zsh_config_enabled: true
+zsh_p10k_config_enabled: true
+
+zsh_set_default_shell: true

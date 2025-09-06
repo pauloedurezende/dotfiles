@@ -1,0 +1,20 @@
+---
+- name: Install zsh package (Ubuntu/Debian)
+  ansible.builtin.apt:
+    name: zsh
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Get current shell
+  ansible.builtin.shell: echo $SHELL
+  register: current_shell
+  changed_when: false
+
+- name: Set zsh as default shell
+  ansible.builtin.command: chsh -s /usr/bin/zsh
+  when:
+    - zsh_set_default_shell
+    - current_shell.stdout != "/usr/bin/zsh"
+  changed_when: true

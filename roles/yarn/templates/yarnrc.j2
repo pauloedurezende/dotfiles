@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+# Yarn configuration file
+
+# Yarn cache folder
+cache-folder "{{ dotfiles_home }}/.cache/yarn"
+
+# Enable network timeout
+network-timeout 600000
+
+# Disable emoji in output
+emoji false
+
+# Progress bars
+progress-bars true
+
+# Save prefix
+save-prefix "^"
+
+# Enable workspaces
+workspaces-experimental true
+
+# Prefer offline
+prefer-offline false
+
+# Global packages location
+global-folder {{ dotfiles_home }}/.config/yarn/global
+
+# Link duplicates
+link-duplicates true
+
+# Yarn registry (fallback to npm registry)
+registry "https://registry.yarnpkg.com"
+
+# Disable update notifier
+disable-self-update-check true

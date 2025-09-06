@@ -1,0 +1,8 @@
+---
+- name: Install Git and related tools
+  community.general.homebrew:
+    name:
+      - git
+      - git-delta
+      - lazygit
+    state: present
