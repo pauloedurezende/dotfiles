@@ -4,7 +4,7 @@ This project automates the installation and configuration of development tools, 
 
 ## 📋 Prerequisites
 
-- **Python 3.8+** installed on the system
+- **Python 3.12+** installed on the system ([download here](https://www.python.org/downloads/))
 - **make** (usually pre-installed on macOS and Linux)
 - Administrative access (sudo) for package installationx
 
