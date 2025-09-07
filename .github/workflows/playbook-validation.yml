@@ -1,0 +1,106 @@
+---
+name: Playbook Validation
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  ansible-lint:
+    name: Ansible Linting
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Initialize environment
+        run: make init
+        env:
+          CI: true
+
+      - name: Run Ansible and YAML linting
+        run: make lint
+        env:
+          CI: true
+
+  syntax-check:
+    name: Syntax Validation
+    runs-on: macos-latest
+    needs: ansible-lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Initialize environment
+        run: make init
+        env:
+          CI: true
+
+      - name: Create vault password file
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Validate Ansible playbook syntax
+        run: make syntax-check
+        env:
+          CI: true
+
+      - name: Cleanup vault password file
+        if: always()
+        run: |
+          rm -f .vault_pass
+
+  dry-run:
+    name: Dry Run Test
+    runs-on: macos-latest
+    needs: syntax-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Initialize environment
+        run: make init
+        env:
+          CI: true
+
+      - name: Create vault password file
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Test Ansible playbook execution
+        run: make dry-run
+        env:
+          CI: true
+
+      - name: Cleanup vault password file
+        if: always()
+        run: |
+          rm -f .vault_pass
