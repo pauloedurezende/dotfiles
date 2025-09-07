@@ -1,0 +1,39 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: ghostty_homebrew_check
+  changed_when: false
+  failed_when: ghostty_homebrew_check.rc != 0
+
+- name: Install Ghostty via Homebrew
+  community.general.homebrew_cask:
+    name: ghostty
+    state: present
+
+- name: Verify Ghostty installation
+  ansible.builtin.command: ghostty --version
+  register: ghostty_version
+  changed_when: false
+  failed_when: ghostty_version.rc != 0
+
+- name: Create Ghostty configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/ghostty"
+    state: directory
+    mode: '0755'
+  when: ghostty_config_enabled
+
+- name: Apply Ghostty configuration template
+  ansible.builtin.template:
+    src: config.j2
+    dest: "{{ dotfiles_home }}/.config/ghostty/config"
+    mode: '0644'
+    backup: true
+  when: ghostty_config_enabled
+
+- name: Create themes directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/ghostty/themes"
+    state: directory
+    mode: '0755'
+  when: ghostty_config_enabled

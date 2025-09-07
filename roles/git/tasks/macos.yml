@@ -1,0 +1,29 @@
+---
+- name: Install Git and related tools
+  community.general.homebrew:
+    name:
+      - git
+      - git-delta
+      - lazygit
+    state: present
+
+- name: Apply Git configuration template
+  ansible.builtin.template:
+    src: gitconfig.j2
+    dest: "{{ dotfiles_home }}/.gitconfig"
+    mode: '0644'
+    backup: true
+  no_log: true
+
+- name: Create lazygit config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/Library/Application Support/lazygit"
+    state: directory
+    mode: '0755'
+
+- name: Apply lazygit configuration template
+  ansible.builtin.template:
+    src: lazygit_config.yml.j2
+    dest: "{{ dotfiles_home }}/Library/Application Support/lazygit/config.yml"
+    mode: '0644'
+    backup: true

@@ -1,0 +1,5 @@
+---
+# User configuration (must be defined in vault or group_vars)
+# git_user_name: defined in vault
+# git_user_email: defined in vault
+# git_signing_key_id: defined in vault (GPG key fingerprint)

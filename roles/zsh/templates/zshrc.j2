@@ -1,0 +1,112 @@
+# {{ ansible_managed }}
+
+{% if zsh_p10k_enabled and zsh_p10k_instant_prompt %}
+# Enable Powerlevel10k instant prompt
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+{% endif %}
+
+# OS-specific initialization
+{% if ansible_os_family == "Darwin" %}
+# macOS specific configuration
+if [[ -f "/opt/homebrew/bin/brew" ]]; then
+  source <(/opt/homebrew/bin/brew shellenv)
+elif [[ -f "/usr/local/bin/brew" ]]; then
+  source <(/usr/local/bin/brew shellenv)
+fi
+{% endif %}
+
+# FZF Configuration
+if command -v asdf >/dev/null 2>&1; then
+  export FZF_BASE="$(asdf where fzf)"
+fi
+
+# Initialize zsh completions
+autoload -Uz compinit && compinit
+
+{% if zsh_zinit_enabled %}
+# Load zinit if available
+if [[ -f "{{ zsh_zinit_home }}/zinit.zsh" ]]; then
+  source "{{ zsh_zinit_home }}/zinit.zsh"
+
+{% if zsh_p10k_enabled %}
+  # Powerlevel10k theme
+  zinit ice depth=1; zinit light romkatv/powerlevel10k
+{% endif %}
+
+  # Essential plugins for better terminal experience
+  zinit light zsh-users/zsh-syntax-highlighting
+  zinit light zsh-users/zsh-completions
+  zinit light zsh-users/zsh-autosuggestions
+  zinit light Aloxaf/fzf-tab
+
+  # Oh My ZSH snippets for common tools
+  zinit snippet OMZP::git
+  zinit snippet OMZP::docker
+  zinit snippet OMZP::kubectl
+  zinit snippet OMZP::asdf
+  zinit snippet OMZP::zoxide
+  zinit snippet OMZP::fzf
+  
+  # Oh My ZSH snippets for project-specific tools
+  zinit snippet OMZP::yarn
+  zinit snippet OMZP::npm
+  zinit snippet OMZP::vscode
+  zinit snippet OMZP::gh
+  zinit snippet OMZP::brew
+  
+  # Oh My ZSH snippets for enhanced experience
+  zinit snippet OMZP::history
+  zinit snippet OMZP::colored-man-pages
+  zinit snippet OMZP::extract
+
+  # Replay completion dump file for zinit
+  zinit cdreplay -q
+fi
+{% endif %}
+
+# Configure zsh completion styling and behavior
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+
+# Use emacs key bindings
+bindkey -e
+
+# Custom key bindings
+bindkey '^[w' kill-region
+bindkey '^n' history-search-forward
+bindkey '^p' history-search-backward
+
+# Configure shell history settings
+HISTSIZE=5000
+SAVEHIST=5000
+HISTFILE=~/.zsh_history
+HISTDUP=erase
+
+# History options
+setopt appendhistory
+setopt hist_find_no_dups
+setopt hist_ignore_all_dups
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt hist_save_no_dups
+setopt sharehistory
+
+# Source tool-specific configurations
+# eza aliases
+[ -f ~/.config/eza/aliases.zsh ] && source ~/.config/eza/aliases.zsh
+
+
+# pnpm shell completions
+if command -v pnpm >/dev/null 2>&1; then
+  eval "$(pnpm completion zsh)"
+fi
+
+{% if zsh_p10k_enabled %}
+# Load Powerlevel10k configuration
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+{% endif %}

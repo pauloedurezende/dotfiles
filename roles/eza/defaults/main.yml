@@ -1,0 +1,5 @@
+---
+eza_versions: ["latest"]
+eza_plugin_url: "https://github.com/pauloedurezende/asdf-eza"
+eza_config_enabled: true
+eza_aliases_enabled: true

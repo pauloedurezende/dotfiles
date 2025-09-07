@@ -1,0 +1,4 @@
+---
+- name: Install fonts on macOS
+  ansible.builtin.include_tasks: macos.yml
+  when: is_macos

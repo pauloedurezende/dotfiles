@@ -1,0 +1,3 @@
+---
+rust_versions: ["latest"]
+rust_plugin_url: "https://github.com/code-lever/asdf-rust"

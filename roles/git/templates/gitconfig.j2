@@ -1,0 +1,100 @@
+# {{ ansible_managed }}
+# Git Configuration
+
+[user]
+    name = {{ git_user_name }}
+    email = {{ git_user_email }}
+{% if git_signing_key_id is defined %}
+    signingkey = {{ git_signing_key_id }}
+{% endif %}
+
+[core]
+    editor = vim
+    excludesfile = {{ dotfiles_home }}/.gitignore_global
+    pager = delta
+
+[init]
+    defaultBranch = main
+
+[push]
+    autoSetupRemote = true
+
+[merge]
+    conflictstyle = diff3
+
+[rerere]
+    enabled = true
+
+[diff]
+    algorithm = histogram
+    colorMoved = default
+
+[commit]
+    gpgsign = true
+
+[tag]
+    gpgsign = true
+
+[gpg]
+    program = gpg
+
+[delta]
+    navigate = true
+    light = false
+    side-by-side = true
+    line-numbers = true
+    syntax-theme = Monokai Extended
+    features = decorations
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box ul
+    file-style = bold yellow ul
+    file-decoration-style = none
+    hunk-header-decoration-style = yellow box
+
+[interactive]
+    diffFilter = delta --color-only
+
+[alias]
+    # Basic commands
+    st = status
+    s = status -s
+    co = checkout
+    br = branch
+    ci = commit
+    cm = commit -m
+    ca = commit -a
+    cam = commit -am
+    aa = add --all
+
+    # Diff and show
+    di = diff
+    dc = diff --cached
+
+    # Merge and rebase
+    ff = merge --ff-only
+    noff = merge --no-ff
+
+    # Remote operations
+    po = push origin
+    poh = push origin HEAD
+    fa = fetch --all
+
+    # Stash operations
+    spop = stash pop
+    spush = stash push
+    slist = stash list
+
+    # Branch management
+    main = checkout main
+    bclean = "!f() { git branch --merged ${1-main} | grep -v " ${1-main}$" | xargs -r git branch -d; }; f"
+
+    # Commit utilities
+    amend = commit --amend
+    undo = reset HEAD~1 --mixed
+    lasttag = describe --tags --abbrev=0
+
+    # Information and logs
+    alias = config --get-regexp alias
+    hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit

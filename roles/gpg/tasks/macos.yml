@@ -1,0 +1,75 @@
+---
+- name: Install GPG and pinentry packages
+  community.general.homebrew:
+    name:
+      - gnupg
+      - pinentry-mac
+    state: present
+
+- name: Set pinentry program path for macOS
+  ansible.builtin.set_fact:
+    gpg_pinentry_program: "{{ homebrew_prefix }}/bin/pinentry-mac"
+
+- name: Disable Keychain integration
+  ansible.builtin.command: >
+    defaults write org.gpgtools.pinentry-mac UseKeychain -bool NO
+  register: gpg_disable_keychain
+  changed_when: true
+
+- name: Create configuration directory
+  ansible.builtin.file:
+    path: "{{ gpg_config_dir }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ dotfiles_user }}"
+
+- name: Install GPG configuration
+  ansible.builtin.copy:
+    src: gpg.conf
+    dest: "{{ gpg_config_dir }}/gpg.conf"
+    mode: "0600"
+    owner: "{{ dotfiles_user }}"
+    backup: true
+
+- name: Apply agent configuration template
+  ansible.builtin.template:
+    src: gpg-agent.conf.j2
+    dest: "{{ gpg_config_dir }}/gpg-agent.conf"
+    mode: "0600"
+    owner: "{{ dotfiles_user }}"
+    backup: true
+  notify: Restart gpg-agent
+
+- name: Set directory permissions
+  ansible.builtin.file:
+    path: "{{ gpg_config_dir }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ dotfiles_user }}"
+    recurse: true
+
+- name: Import private key from vault
+  ansible.builtin.shell: >
+    set -o pipefail;
+    echo "{{ gpg_private_key }}" | gpg --batch --import
+  when: gpg_import_key and gpg_private_key is defined
+  register: gpg_import_result
+  changed_when: "'imported' in gpg_import_result.stderr"
+  failed_when: >
+    gpg_import_result.rc != 0 and
+    'already in secret keyring' not in gpg_import_result.stderr
+  no_log: true
+
+- name: Set ultimate trust for imported key
+  ansible.builtin.shell: >
+    set -o pipefail;
+    gpg --list-secret-keys --fingerprint --with-colons |
+    sed -E -n -e 's/^fpr:::::::::([0-9A-F]+):$/\1:6:/p' |
+    head -1 | gpg --import-ownertrust
+  when:
+    - gpg_import_key
+    - gpg_private_key is defined
+    - gpg_key_trust_level == "ultimate"
+  register: gpg_trust_result
+  changed_when: "'imported' in gpg_trust_result.stderr"
+  no_log: true

@@ -1,0 +1,11 @@
+---
+homebrew_install_url: >-
+  https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+homebrew_install_script: >-
+  /bin/bash -c "$(curl -fsSL {{ homebrew_install_url }})"
+
+homebrew_install_timeout: 600
+homebrew_install_retries: 3
+homebrew_install_delay: 10
+
+homebrew_shell_env_command: "eval \"$({{ homebrew_bin_path }}/brew shellenv)\""

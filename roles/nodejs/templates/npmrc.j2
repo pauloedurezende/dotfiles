@@ -1,0 +1,33 @@
+# {{ ansible_managed }}
+# npm configuration file
+
+# Use npm registry
+registry=https://registry.npmjs.org/
+
+# Save exact versions
+save-exact=true
+
+# Progress indicator
+progress=true
+
+# Audit level
+audit-level=moderate
+
+# Fund messages
+fund=false
+
+# Init defaults
+init-license=MIT
+init-version=1.0.0
+
+# Global npm packages location
+prefix={{ dotfiles_home }}/.local/npm-global
+
+# Cache directory
+cache={{ dotfiles_home }}/.cache/npm
+
+# Logs directory  
+logs-dir={{ dotfiles_home }}/.local/share/npm/logs
+
+# Temporary directory
+tmp={{ dotfiles_home }}/.cache/npm/tmp

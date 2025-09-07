@@ -1,0 +1,16 @@
+---
+asdf_version: "v0.18.0"
+asdf_dir: "{{ dotfiles_home }}/.asdf"
+
+asdf_binary_base_url: "https://github.com/asdf-vm/asdf/releases/download"
+asdf_binary_install_path: "{{ dotfiles_home }}/.local/bin"
+
+# Dynamic OS and architecture detection
+asdf_os: "{{ 'darwin' if ansible_system == 'Darwin' else 'linux' }}"
+asdf_arch: "{{ 'arm64' if ansible_architecture == 'arm64' else 'amd64' }}"
+
+# Dynamic filename and URL construction
+asdf_binary_filename: >-
+  asdf-{{ asdf_version }}-{{ asdf_os }}-{{ asdf_arch }}.tar.gz
+asdf_download_url: >-
+  {{ asdf_binary_base_url }}/{{ asdf_version }}/{{ asdf_binary_filename }}

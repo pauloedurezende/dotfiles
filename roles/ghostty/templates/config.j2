@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+# Ghostty Configuration
+# Documentation: https://ghostty.org/docs/config
+
+# Theme
+theme = GruvboxDark
+
+# Font
+font-size = 14
+
+# Window
+window-padding-x = 10
+window-padding-y = 10
+
+# Cursor
+cursor-style-blink = true
+
+# Scrollback
+scrollback-limit = 10000
+
+# Shell integration
+shell-integration = detect
+
+# Behavior
+copy-on-select = true
+
+{% if is_macos %}
+# macOS specific
+font-thicken = true
+macos-option-as-alt = true
+{% endif %}
+
+# Additional configuration can be added below
+# Custom keybindings can be added here:
+# keybind = cmd+k=clear
+# keybind = cmd+t=new_tab

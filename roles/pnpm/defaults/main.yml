@@ -1,0 +1,4 @@
+---
+pnpm_versions: ["latest"]
+pnpm_plugin_url: "https://github.com/jonathanmorley/asdf-pnpm"
+pnpm_config_enabled: true

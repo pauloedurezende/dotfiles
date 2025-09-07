@@ -1,0 +1,63 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: vscode_homebrew_check
+  changed_when: false
+  failed_when: vscode_homebrew_check.rc != 0
+
+- name: Install Visual Studio Code via Homebrew Cask
+  community.general.homebrew_cask:
+    name: visual-studio-code
+    state: present
+
+- name: Verify VS Code installation
+  ansible.builtin.command: code --version
+  register: vscode_version
+  changed_when: false
+  failed_when: vscode_version.rc != 0
+
+- name: Create VS Code configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/Library/Application Support/Code/User"
+    state: directory
+    mode: '0755'
+  when: vscode_settings_enabled
+
+- name: Apply VS Code settings template
+  ansible.builtin.template:
+    src: settings.json.j2
+    dest: >-
+      {{ dotfiles_home }}/Library/Application Support/Code/User/settings.json
+    mode: '0644'
+    backup: true
+  when: vscode_settings_enabled
+
+- name: Install VS Code extensions
+  ansible.builtin.command: code --install-extension {{ item }}
+  loop:
+    - adpyke.codesnap
+    - dbaeumer.vscode-eslint
+    - dsznajder.es7-react-js-snippets
+    - eamodio.gitlens
+    - editorconfig.editorconfig
+    - esbenp.prettier-vscode
+    - github.github-vscode-theme
+    - github.vscode-github-actions
+    - github.vscode-pull-request-github
+    - ibm.output-colorizer
+    - irongeek.vscode-env
+    - miguelsolorio.fluent-icons
+    - nicoespeon.abracadabra
+    - orta.vscode-jest
+    - pkief.material-icon-theme
+    - redhat.vscode-yaml
+    - styled-components.vscode-styled-components
+    - tyriar.sort-lines
+    - visualstudioexptteam.intellicode-api-usage-examples
+    - visualstudioexptteam.vscodeintellicode
+    - wallabyjs.quokka-vscode
+  register: vscode_extension_install
+  changed_when: "'already installed' not in vscode_extension_install.stdout"
+  failed_when: >
+    vscode_extension_install.rc != 0 and
+    'already installed' not in vscode_extension_install.stdout

@@ -1,0 +1,25 @@
+---
+- name: Manage bat via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: bat
+      url: "{{ bat_plugin_url }}"
+      versions: "{{ bat_versions }}"
+      global: "{{ bat_versions[0] }}"
+
+- name: Create bat config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/bat"
+    state: directory
+    mode: '0755'
+  when: bat_config_enabled
+
+- name: Install bat configuration
+  ansible.builtin.copy:
+    src: config
+    dest: "{{ dotfiles_home }}/.config/bat/config"
+    mode: '0644'
+  when: bat_config_enabled

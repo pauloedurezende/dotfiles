@@ -1,0 +1,66 @@
+---
+- name: Create local bin directory
+  ansible.builtin.file:
+    path: "{{ asdf_binary_install_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Download asdf binary
+  ansible.builtin.get_url:
+    url: "{{ asdf_download_url }}"
+    dest: "/tmp/{{ asdf_binary_filename }}"
+    mode: '0644'
+    timeout: 30
+    force: true
+  retries: 3
+  delay: 5
+
+- name: Extract asdf binary directly to installation directory
+  ansible.builtin.shell: |
+    tar -xzf "/tmp/{{ asdf_binary_filename }}" \
+        -C "{{ asdf_binary_install_path }}" \
+        --strip-components=1
+    chmod +x "{{ asdf_binary_install_path }}/asdf"
+  args:
+    creates: "{{ asdf_binary_install_path }}/asdf"
+    # noqa: command-instead-of-module
+    # Using shell/tar because unarchive module fails in CI environment
+
+- name: Clean up downloaded archive
+  ansible.builtin.file:
+    path: "/tmp/{{ asdf_binary_filename }}"
+    state: absent
+
+- name: Create asdf data directory
+  ansible.builtin.file:
+    path: "{{ asdf_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy asdf configuration file
+  ansible.builtin.copy:
+    src: asdfrc
+    dest: "{{ dotfiles_home }}/.asdfrc"
+    mode: '0644'
+    backup: true
+
+- name: Add asdf to PATH in shell profile
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.zprofile"
+    line: 'export PATH="{{ asdf_binary_install_path }}:$PATH"'
+    create: true
+    mode: '0644'
+
+- name: Add asdf data directory to shell profile
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.zprofile"
+    line: 'export ASDF_DATA_DIR="{{ asdf_dir }}"'
+    create: true
+    mode: '0644'
+
+- name: Verify asdf installation
+  ansible.builtin.command: "{{ asdf_binary_install_path }}/asdf version"
+  register: asdf_version_output
+  changed_when: false
+  retries: 3
+  delay: 2

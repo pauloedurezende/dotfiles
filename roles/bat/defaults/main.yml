@@ -1,0 +1,4 @@
+---
+bat_versions: ["latest"]
+bat_plugin_url: "https://github.com/pauloedurezende/asdf-bat"
+bat_config_enabled: true
