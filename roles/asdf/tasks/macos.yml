@@ -34,11 +34,13 @@
     path: "{{ asdf_binary_install_path }}/asdf"
   register: asdf_binary_stat
   failed_when: not asdf_binary_stat.stat.exists
+  when: not ansible_check_mode
 
 - name: Make asdf binary executable
   ansible.builtin.file:
     path: "{{ asdf_binary_install_path }}/asdf"
     mode: '0755'
+  when: not ansible_check_mode
 
 - name: Clean up downloaded archive
   ansible.builtin.file:
