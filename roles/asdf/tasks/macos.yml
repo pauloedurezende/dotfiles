@@ -5,10 +5,16 @@
     state: directory
     mode: '0755'
 
-- name: Download asdf binary
+- name: Create cache directory for downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+
+- name: Download asdf pre-compiled binary
   ansible.builtin.get_url:
     url: "{{ asdf_download_url }}"
-    dest: "/tmp/{{ asdf_binary_filename }}"
+    dest: "{{ dotfiles_home }}/.cache/{{ asdf_binary_filename }}"
     mode: '0644'
     timeout: 30
     force: true
@@ -17,18 +23,28 @@
 
 - name: Extract asdf binary directly to installation directory
   ansible.builtin.shell: |
-    tar -xzf "/tmp/{{ asdf_binary_filename }}" \
-        -C "{{ asdf_binary_install_path }}" \
-        --strip-components=1
-    chmod +x "{{ asdf_binary_install_path }}/asdf"
+    tar -xzf "{{ dotfiles_home }}/.cache/{{ asdf_binary_filename }}" \
+        -C "{{ asdf_binary_install_path }}"
   args:
     creates: "{{ asdf_binary_install_path }}/asdf"
     # noqa: command-instead-of-module
-    # Using shell/tar because unarchive module fails in CI environment
+
+- name: Verify asdf binary was extracted successfully
+  ansible.builtin.stat:
+    path: "{{ asdf_binary_install_path }}/asdf"
+  register: asdf_binary_stat
+  failed_when: not asdf_binary_stat.stat.exists
+  when: not ansible_check_mode
+
+- name: Make asdf binary executable
+  ansible.builtin.file:
+    path: "{{ asdf_binary_install_path }}/asdf"
+    mode: '0755'
+  when: not ansible_check_mode
 
 - name: Clean up downloaded archive
   ansible.builtin.file:
-    path: "/tmp/{{ asdf_binary_filename }}"
+    path: "{{ dotfiles_home }}/.cache/{{ asdf_binary_filename }}"
     state: absent
 
 - name: Create asdf data directory
