@@ -1,0 +1,237 @@
+---
+name: Security Scanning
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+
+      - name: Scan Python dependencies
+        run: |
+          echo "Scanning requirements.txt for vulnerabilities..."
+          pip-audit -r requirements.txt --desc
+
+      - name: Check for outdated packages
+        continue-on-error: true
+        run: |
+          pip list --outdated --format=json > outdated.json
+          if [ -s outdated.json ]; then
+            echo "::warning::Found outdated packages:"
+            python -c "import json; data=json.load(open('outdated.json'));
+            for pkg in data:
+              n = pkg['name']; v = pkg['version']; l = pkg['latest_version'];
+              print(f'  - {n}: {v} -> {l}')""
+          fi
+
+  secrets-detection:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify vault encryption
+        run: |
+          echo "Checking vault files are encrypted..."
+          for file in $(find . -name "vault.yml" -o -name "vault.yaml" | \
+            grep -v venv/); do
+            if head -n 1 "$file" | grep -q "^\$ANSIBLE_VAULT"; then
+              echo "[OK] $file is encrypted"
+            else
+              echo "[FAIL] $file is NOT encrypted!"
+              exit 1
+            fi
+          done
+
+  permissions-check:
+    name: File Permissions Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check sensitive file permissions
+        run: |
+          echo "Validating file permissions..."
+
+          # Check if any script files have unusual permissions
+          find . -name "*.sh" -type f | while read -r file; do
+            perms=$(stat -c "%a" "$file")
+            if [ "$perms" -gt "755" ]; then
+              echo "::warning::$file has overly permissive permissions: $perms"
+            fi
+          done
+
+          # Ensure no world-writable files
+          world_writable=$(find . -type f -perm -o+w | \
+            grep -v ".git/" | grep -v "venv/" || true)
+          if [ -n "$world_writable" ]; then
+            echo "::error::Found world-writable files:"
+            echo "$world_writable"
+            exit 1
+          fi
+
+      - name: Check for executable files
+        run: |
+          # List all executable files for review
+          echo "Executable files in repository:"
+          find . -type f -executable | \
+            grep -v ".git/" | grep -v "venv/" || \
+            echo "No executable files found"
+
+  sast-analysis:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml] semgrep
+
+      - name: Run Bandit on Python code
+        continue-on-error: true
+        run: |
+          echo "Running Bandit security analysis..."
+          bandit -r . -f json -o bandit-report.json || true
+
+          # Parse and display results
+          if [ -f bandit-report.json ]; then
+            python3 << 'EOF'
+          import json
+          data = json.load(open('bandit-report.json'))
+          if data['results']:
+              print('Security issues found:')
+              for issue in data['results']:
+                  severity = issue['issue_severity']
+                  text = issue['issue_text']
+                  filename = issue['filename']
+                  line = issue['line_number']
+                  print(f"  [{severity}] {text} - {filename}:{line}")
+          else:
+              print('No security issues found by Bandit')
+          EOF
+          fi
+
+      - name: Ansible Security Best Practices Check
+        run: |
+          echo "Checking Ansible security best practices..."
+
+          # Check for no_log on sensitive tasks
+          echo "Checking for missing no_log on sensitive tasks..."
+          grep -r "password\|token\|secret\|key\|credential" \
+            roles/*/tasks/*.yml | \
+            grep -v "no_log: true" | \
+            grep -v "^#" || \
+            echo "All sensitive tasks appear to have no_log set"
+
+          # Check for become without password
+          echo "Checking for unsafe privilege escalation..."
+          grep -r "become: yes\|become: true" . --include="*.yml" | \
+            grep -v "become_ask_pass\|ask_become_pass" | \
+            head -10 || true
+
+      - name: Run Semgrep security rules
+        continue-on-error: true
+        run: |
+          echo "Running Semgrep security analysis..."
+          semgrep --config=auto --json -o semgrep-report.json . || true
+
+          if [ -f semgrep-report.json ]; then
+            python3 << 'EOF'
+          import json
+          data = json.load(open('semgrep-report.json'))
+          if data.get('results'):
+              print(f"Found {len(data['results'])} potential issues")
+              # Show first 10
+              for result in data['results'][:10]:
+                  check_id = result.get('check_id', 'unknown')
+                  path = result.get('path', 'unknown')
+                  line = result.get('start', {}).get('line', '?')
+                  print(f"  - {check_id}: {path}:{line}")
+          else:
+              print('No issues found by Semgrep')
+          EOF
+          fi
+
+  security-report:
+    name: Security Report Summary
+    runs-on: ubuntu-latest
+    needs:
+      - dependency-scan
+      - secrets-detection
+      - permissions-check
+      - sast-analysis
+    if: always()
+
+    steps:
+      - name: Generate security summary
+        run: |
+          echo "## Security Scan Summary"
+          echo ""
+          echo "| Check | Status |"
+          echo "|-------|--------|"
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |"
+          echo "| Secrets Detection | ${{ needs.secrets-detection.result }} |"
+          echo "| Permissions Check | ${{ needs.permissions-check.result }} |"
+          echo "| SAST Analysis | ${{ needs.sast-analysis.result }} |"
+          echo ""
+
+          if [ "${{ needs.dependency-scan.result }}" = "failure" ] || \
+             [ "${{ needs.secrets-detection.result }}" = "failure" ] || \
+             [ "${{ needs.permissions-check.result }}" = "failure" ]; then
+            echo "[WARNING] Critical security issues detected."
+            echo "Please review the failed checks above."
+            exit 1
+          elif [ "${{ needs.sast-analysis.result }}" = "failure" ]; then
+            echo "[WARNING] Non-critical security issues in SAST analysis."
+          else
+            echo "[SUCCESS] All security checks passed!"
+          fi
