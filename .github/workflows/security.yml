@@ -163,20 +163,41 @@ jobs:
       - name: Ansible Security Best Practices Check
         run: |
           echo "Checking Ansible security best practices..."
+          FOUND_ISSUES=0
 
           # Check for no_log on sensitive tasks
           echo "Checking for missing no_log on sensitive tasks..."
-          grep -r "password\|token\|secret\|key\|credential" \
-            roles/*/tasks/*.yml | \
+          SENSITIVE_TASKS=$(grep -r "password\|token\|secret\|key\|credential" \
+            roles/*/tasks/*.yml 2>/dev/null | \
             grep -v "no_log: true" | \
-            grep -v "^#" || \
-            echo "All sensitive tasks appear to have no_log set"
+            grep -v "^#" || true)
+
+          if [ -n "$SENSITIVE_TASKS" ]; then
+            echo "::error::Found sensitive tasks without no_log:"
+            echo "$SENSITIVE_TASKS"
+            FOUND_ISSUES=1
+          else
+            echo "All sensitive tasks have no_log set"
+          fi
 
           # Check for become without password
           echo "Checking for unsafe privilege escalation..."
-          grep -r "become: yes\|become: true" . --include="*.yml" | \
+          UNSAFE_BECOME=$(grep -r "become: yes\|become: true" . \
+            --include="*.yml" | \
             grep -v "become_ask_pass\|ask_become_pass" | \
-            head -10 || true
+            grep -v "venv/" | \
+            head -10 || true)
+
+          if [ -n "$UNSAFE_BECOME" ]; then
+            echo "::warning::Found privilege escalation without password:"
+            echo "$UNSAFE_BECOME"
+          fi
+
+          # Exit with error if critical issues found
+          if [ $FOUND_ISSUES -eq 1 ]; then
+            echo "::error::Security check failed! Fix the issues above."
+            exit 1
+          fi
 
       - name: Run Semgrep security rules
         continue-on-error: true
@@ -216,12 +237,33 @@ jobs:
         run: |
           echo "## Security Scan Summary"
           echo ""
-          echo "| Check | Status |"
-          echo "|-------|--------|"
-          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |"
-          echo "| Secrets Detection | ${{ needs.secrets-detection.result }} |"
-          echo "| Permissions Check | ${{ needs.permissions-check.result }} |"
-          echo "| SAST Analysis | ${{ needs.sast-analysis.result }} |"
+
+          # Function to format status with symbols
+          format_status() {
+            if [ "$1" = "success" ]; then
+              echo "[PASS]"
+            elif [ "$1" = "failure" ]; then
+              echo "[FAIL]"
+            elif [ "$1" = "skipped" ]; then
+              echo "[SKIP]"
+            else
+              echo "[$1]"
+            fi
+          }
+
+          # Print formatted table
+          echo "+---------------------------+----------+"
+          printf "| %-25s | %-8s |\n" "Security Check" "Status"
+          echo "+---------------------------+----------+"
+          printf "| %-25s | %-8s |\n" "Dependency Scan" \
+            "$(format_status '${{ needs.dependency-scan.result }}')"
+          printf "| %-25s | %-8s |\n" "Secrets Detection" \
+            "$(format_status '${{ needs.secrets-detection.result }}')"
+          printf "| %-25s | %-8s |\n" "Permissions Check" \
+            "$(format_status '${{ needs.permissions-check.result }}')"
+          printf "| %-25s | %-8s |\n" "SAST Analysis" \
+            "$(format_status '${{ needs.sast-analysis.result }}')"
+          echo "+---------------------------+----------+"
           echo ""
 
           if [ "${{ needs.dependency-scan.result }}" = "failure" ] || \
