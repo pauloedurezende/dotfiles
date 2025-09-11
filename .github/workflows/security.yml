@@ -97,18 +97,40 @@ jobs:
       - name: Check sensitive file permissions
         run: |
           echo "Validating file permissions..."
+          set -e  # Exit on error
+          FOUND_ISSUES=0
 
-          # Check if any script files have unusual permissions
-          find . -name "*.sh" -type f | while read -r file; do
+          # Check script files for dangerous permissions
+          echo "Checking script file permissions..."
+          find . -type f -name "*.sh" -print0 | \
+            while IFS= read -r -d '' file; do
             perms=$(stat -c "%a" "$file")
-            if [ "$perms" -gt "755" ]; then
+            perms_int=$((10#$perms))  # Convert to decimal for arithmetic
+
+            # Check if world-writable (others can write)
+            if [ $(($perms_int & 002)) -ne 0 ]; then
+              echo "::error::$file is world-writable: $perms"
+              exit 1
+            fi
+
+            # Check if group-writable and executable
+            if [ $(($perms_int & 020)) -ne 0 ] && \
+               [ $(($perms_int & 100)) -ne 0 ]; then
+              echo "::warning::$file is group-writable and executable: $perms"
+            fi
+
+            # Warn if permissions are too open (anything beyond 755)
+            if [ $perms_int -gt 755 ]; then
               echo "::warning::$file has overly permissive permissions: $perms"
             fi
           done
 
-          # Ensure no world-writable files
-          world_writable=$(find . -type f -perm -o+w | \
-            grep -v ".git/" | grep -v "venv/" || true)
+          # Ensure no world-writable files (better filtering)
+          echo "Checking for world-writable files..."
+          world_writable=$(find . -path ./.git -prune -o \
+            -path ./venv -prune -o \
+            -path ./env -prune -o \
+            -type f -perm -o+w -print)
           if [ -n "$world_writable" ]; then
             echo "::error::Found world-writable files:"
             echo "$world_writable"
@@ -119,9 +141,22 @@ jobs:
         run: |
           # List all executable files for review
           echo "Executable files in repository:"
-          find . -type f -executable | \
-            grep -v ".git/" | grep -v "venv/" || \
+          exec_files=$(find . -path ./.git -prune -o \
+            -path ./venv -prune -o \
+            -path ./env -prune -o \
+            -type f -executable -print)
+          if [ -n "$exec_files" ]; then
+            echo "$exec_files"
+            # Check for suspicious SUID/SGID files
+            suspicious=$(echo "$exec_files" | xargs -r stat -c "%n %a" | \
+              awk '$2 ~ /^[4567]/ {print $1 " (SUID/SGID: " $2 ")"}')
+            if [ -n "$suspicious" ]; then
+              echo "::warning::Found SUID/SGID files:"
+              echo "$suspicious"
+            fi
+          else
             echo "No executable files found"
+          fi
 
   sast-analysis:
     name: Static Application Security Testing
