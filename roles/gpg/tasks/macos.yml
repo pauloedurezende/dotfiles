@@ -10,12 +10,6 @@
   ansible.builtin.set_fact:
     gpg_pinentry_program: "{{ homebrew_prefix }}/bin/pinentry-mac"
 
-- name: Disable Keychain integration
-  ansible.builtin.command: >
-    defaults write org.gpgtools.pinentry-mac UseKeychain -bool NO
-  register: gpg_disable_keychain
-  changed_when: true
-
 - name: Create configuration directory
   ansible.builtin.file:
     path: "{{ gpg_config_dir }}"
