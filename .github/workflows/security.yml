@@ -186,17 +186,28 @@ jobs:
           if [ -f bandit-report.json ]; then
             python3 << 'EOF'
           import json
-          data = json.load(open('bandit-report.json'))
-          if data['results']:
-              print('Security issues found:')
-              for issue in data['results']:
-                  severity = issue['issue_severity']
-                  text = issue['issue_text']
-                  filename = issue['filename']
-                  line = issue['line_number']
-                  print(f"  [{severity}] {text} - {filename}:{line}")
-          else:
-              print('No security issues found by Bandit')
+          import sys
+
+          try:
+              with open('bandit-report.json', 'r') as f:
+                  data = json.load(f)
+
+              if data.get('results'):
+                  print('Security issues found:')
+                  for issue in data['results']:
+                      severity = issue.get('issue_severity', 'UNKNOWN')
+                      text = issue.get('issue_text', 'No description')
+                      filename = issue.get('filename', 'unknown')
+                      line = issue.get('line_number', 0)
+                      print(f"  [{severity}] {text} - {filename}:{line}")
+              else:
+                  print('No security issues found by Bandit')
+          except json.JSONDecodeError as e:
+              print(f"::warning::Failed to parse Bandit report: {e}")
+              sys.exit(0)
+          except Exception as e:
+              print(f"::warning::Error processing Bandit report: {e}")
+              sys.exit(0)
           EOF
           fi
 
@@ -208,50 +219,72 @@ jobs:
           # Check for no_log on sensitive tasks
           echo "Checking for missing no_log on sensitive tasks..."
 
-          # Simple check: if files have both sensitive keywords and
-          # shell/command, they should have no_log. This is a simplified check.
-          echo "Note: This is a simplified check. Manual review recommended."
-
-          # For now, we'll just warn about files that might need review
-          FILES_TO_REVIEW=""
-          for file in roles/*/tasks/*.yml; do
-            if [ -f "$file" ]; then
-              # Check if file has shell/command tasks
-              if grep -q "shell:\|command:\|uri:\|raw:" \
-                "$file" 2>/dev/null; then
-                # Check if it mentions sensitive keywords
-                if grep -q "password\|token\|secret\|private_key\|credential" \
-                  "$file" 2>/dev/null; then
-                  # Check if it has no_log
-                  if ! grep -q "no_log: true" "$file" 2>/dev/null; then
-                    FILES_TO_REVIEW="$FILES_TO_REVIEW $file"
-                  fi
-                fi
+          # Use find for better handling of missing directories
+          if [ -d "roles" ]; then
+            FILES_TO_REVIEW=""
+            # Find all task files efficiently
+            find roles -type f -name "*.yml" -o -name "*.yaml" | \
+            while IFS= read -r file; do
+              # Single pass analysis with awk
+              result=$(awk '
+                BEGIN { has_exec=0; has_sensitive=0; has_nolog=0 }
+                # Skip comments and empty lines
+                /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
+                # Check for execution modules
+                /^[[:space:]]*(- name:|[[:space:]]*)?(shell|command|uri|raw):/ {
+                  has_exec=1
+                }
+                # Check for sensitive content
+                /(password|token|secret|private_key|credential|api_key)/ {
+                  if (!/^[[:space:]]*#/) has_sensitive=1
+                }
+                # Check for no_log (various formats)
+                /no_log:[[:space:]]*(true|yes|True|Yes|TRUE|YES|on|1)/ {
+                  has_nolog=1
+                }
+                END {
+                  if (has_exec && has_sensitive && !has_nolog) {
+                    print "needs_review"
+                  }
+                }
+              ' "$file")
+              if [ "$result" = "needs_review" ]; then
+                FILES_TO_REVIEW="$FILES_TO_REVIEW $file"
               fi
-            fi
-          done
-
-          if [ -n "$FILES_TO_REVIEW" ]; then
-            echo "::warning::Files that may need no_log review:"
-            for f in $FILES_TO_REVIEW; do
-              echo "  - $f"
             done
-            # Don't fail the build for this, just warn
+
+            if [ -n "$FILES_TO_REVIEW" ]; then
+              echo "::warning::Files that may need no_log review:"
+              for f in $FILES_TO_REVIEW; do
+                echo "  - $f"
+              done
+            else
+              echo "All files with sensitive tasks appear to have no_log set"
+            fi
           else
-            echo "All files with sensitive tasks appear to have no_log set"
+            echo "No roles directory found, skipping Ansible checks"
           fi
 
           # Check for become without password
           echo "Checking for unsafe privilege escalation..."
-          UNSAFE_BECOME=$(grep -r "become: yes\|become: true" . \
-            --include="*.yml" | \
-            grep -v "become_ask_pass\|ask_become_pass" | \
-            grep -v "venv/" | \
-            head -10 || true)
+          # More robust become detection with word boundaries
+          UNSAFE_BECOME=$(find . -name "*.yml" -o -name "*.yaml" | \
+            xargs grep -l \
+              "^[^#]*become:[[:space:]]*\(yes\|true\|True\|on\|1\)" \
+              2>/dev/null | \
+            while IFS= read -r file; do
+              # Check if file has become_ask_pass or ansible_become_pass
+              if ! grep -q \
+                "become_ask_pass\|ansible_become_pass" "$file" 2>/dev/null
+              then
+                echo "$file"
+              fi
+            done | head -10)
 
           if [ -n "$UNSAFE_BECOME" ]; then
-            echo "::warning::Found privilege escalation without password:"
+            echo "::warning::Found privilege escalation possibly without pass:"
             echo "$UNSAFE_BECOME"
+            echo "Verify these files use vault or other secure methods for auth"
           fi
 
           # Exit with error if critical issues found
@@ -269,17 +302,34 @@ jobs:
           if [ -f semgrep-report.json ]; then
             python3 << 'EOF'
           import json
-          data = json.load(open('semgrep-report.json'))
-          if data.get('results'):
-              print(f"Found {len(data['results'])} potential issues")
-              # Show first 10
-              for result in data['results'][:10]:
-                  check_id = result.get('check_id', 'unknown')
-                  path = result.get('path', 'unknown')
-                  line = result.get('start', {}).get('line', '?')
-                  print(f"  - {check_id}: {path}:{line}")
-          else:
-              print('No issues found by Semgrep')
+          import sys
+
+          try:
+              with open('semgrep-report.json', 'r') as f:
+                  data = json.load(f)
+
+              results = data.get('results', [])
+              if results:
+                  print(f"Found {len(results)} potential issues")
+                  # Show first 10 issues
+                  for result in results[:10]:
+                      check_id = result.get('check_id', 'unknown')
+                      path = result.get('path', 'unknown')
+                      start = result.get('start', {})
+                      line = (start.get('line', '?')
+                             if isinstance(start, dict) else '?')
+                      print(f"  - {check_id}: {path}:{line}")
+
+                  if len(results) > 10:
+                      print(f"  ... and {len(results) - 10} more issues")
+              else:
+                  print('No issues found by Semgrep')
+          except json.JSONDecodeError as e:
+              print(f"::warning::Failed to parse Semgrep report: {e}")
+              sys.exit(0)
+          except Exception as e:
+              print(f"::warning::Error processing Semgrep report: {e}")
+              sys.exit(0)
           EOF
           fi
 
