@@ -2,3 +2,10 @@
 - name: Include macOS-specific tasks
   ansible.builtin.include_tasks: macos.yml
   when: is_macos
+
+- name: Include Linux-specific tasks
+  ansible.builtin.include_tasks: linux.yml
+  when: is_linux
+
+- name: Include common tasks
+  ansible.builtin.include_tasks: commons.yml
