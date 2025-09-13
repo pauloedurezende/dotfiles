@@ -10,3 +10,6 @@ zsh_config_enabled: true
 zsh_p10k_config_enabled: true
 
 zsh_set_default_shell: true
+
+# Linux-specific variables
+zsh_linux_binary_path: "/usr/bin/zsh"

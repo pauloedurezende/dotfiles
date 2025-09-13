@@ -16,7 +16,10 @@ env:
 jobs:
   ansible-lint:
     name: Ansible Linting
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout code
@@ -39,7 +42,10 @@ jobs:
 
   syntax-check:
     name: Syntax Validation
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     needs: ansible-lint
 
     steps:
@@ -73,7 +79,10 @@ jobs:
 
   dry-run:
     name: Dry Run Test
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     needs: syntax-check
 
     steps:

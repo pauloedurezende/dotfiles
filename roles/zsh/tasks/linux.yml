@@ -4,22 +4,23 @@
   register: zsh_current_shell
   changed_when: false
 
-- name: Install zsh via Homebrew
-  community.general.homebrew:
+- name: Install zsh via package manager
+  ansible.builtin.package:
     name: zsh
     state: present
+  become: true
 
-- name: Add Homebrew zsh to /etc/shells
+- name: Add zsh to /etc/shells
   ansible.builtin.lineinfile:
     path: /etc/shells
-    line: "{{ homebrew_bin_path }}/zsh"
+    line: "{{ zsh_linux_binary_path }}"
     state: present
   become: true
   when: zsh_set_default_shell
 
 - name: Set zsh as default shell
-  ansible.builtin.command: chsh -s "{{ homebrew_bin_path }}/zsh"
+  ansible.builtin.command: chsh -s {{ zsh_linux_binary_path }}
   when:
     - zsh_set_default_shell
-    - zsh_current_shell.stdout != homebrew_bin_path + "/zsh"
+    - zsh_current_shell.stdout != zsh_linux_binary_path
   changed_when: true

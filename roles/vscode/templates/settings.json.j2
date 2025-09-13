@@ -34,7 +34,11 @@
   "material-icon-theme.folders.theme": "classic",
   "security.promptForLocalFileProtocolHandling": false,
   "security.workspace.trust.untrustedFiles": "newWindow",
+{% if is_macos %}
   "terminal.integrated.defaultProfile.osx": "zsh",
+{% else %}
+  "terminal.integrated.defaultProfile.linux": "zsh",
+{% endif %}
   "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font Mono",
   "terminal.integrated.fontSize": 14,
   "terminal.integrated.fontWeight": "bold",

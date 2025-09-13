@@ -1,0 +1,55 @@
+---
+- name: Get latest 1Password CLI version from RSS feed
+  ansible.builtin.uri:
+    url: https://releases.1password.com/developers/cli/index.xml
+    return_content: true
+  register: op_rss_feed
+  delegate_to: localhost
+  run_once: true
+  when: not ansible_check_mode
+
+- name: Extract latest version from RSS feed
+  ansible.builtin.set_fact:
+    op_latest_version: >-
+      {{
+        op_rss_feed.content |
+        regex_search('v([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') |
+        first
+      }}
+  when: not ansible_check_mode
+
+- name: Create cache directory for downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+
+- name: Check architecture
+  ansible.builtin.set_fact:
+    op_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Download 1Password CLI for Linux
+  ansible.builtin.get_url:
+    url: >-
+      https://cache.agilebits.com/dist/1P/op2/pkg/v{{ op_latest_version }}/
+      op_linux_{{ op_arch }}_v{{ op_latest_version }}.zip
+    dest: "{{ dotfiles_home }}/.cache/op.zip"
+    mode: '0644'
+  when: not ansible_check_mode
+
+- name: Extract and install 1Password CLI
+  ansible.builtin.unarchive:
+    src: "{{ dotfiles_home }}/.cache/op.zip"
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+    owner: root
+    group: root
+  become: true
+  when: not ansible_check_mode
+
+- name: Clean up downloaded archive
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache/op.zip"
+    state: absent
+  when: not ansible_check_mode
