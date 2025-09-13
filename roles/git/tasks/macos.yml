@@ -7,14 +7,6 @@
       - lazygit
     state: present
 
-- name: Apply Git configuration template
-  ansible.builtin.template:
-    src: gitconfig.j2
-    dest: "{{ dotfiles_home }}/.gitconfig"
-    mode: '0644'
-    backup: true
-  no_log: true
-
 - name: Create lazygit config directory
   ansible.builtin.file:
     path: "{{ dotfiles_home }}/Library/Application Support/lazygit"

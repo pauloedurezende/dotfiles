@@ -1,0 +1,8 @@
+---
+- name: Apply Git configuration template
+  ansible.builtin.template:
+    src: gitconfig.j2
+    dest: "{{ dotfiles_home }}/.gitconfig"
+    mode: '0644'
+    backup: true
+  no_log: true
