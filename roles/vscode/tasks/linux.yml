@@ -8,6 +8,7 @@
     state: present
     update_cache: true
   become: true
+  no_log: true
 
 - name: Download Microsoft GPG key
   ansible.builtin.get_url:
