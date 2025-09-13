@@ -1,0 +1,36 @@
+---
+- name: Verify VS Code installation
+  ansible.builtin.command: code --version
+  register: vscode_version
+  changed_when: false
+  failed_when: vscode_version.rc != 0
+
+- name: Install VS Code extensions
+  ansible.builtin.command: code --install-extension {{ item }}
+  loop:
+    - adpyke.codesnap
+    - dbaeumer.vscode-eslint
+    - dsznajder.es7-react-js-snippets
+    - eamodio.gitlens
+    - editorconfig.editorconfig
+    - esbenp.prettier-vscode
+    - github.github-vscode-theme
+    - github.vscode-github-actions
+    - github.vscode-pull-request-github
+    - ibm.output-colorizer
+    - irongeek.vscode-env
+    - miguelsolorio.fluent-icons
+    - nicoespeon.abracadabra
+    - orta.vscode-jest
+    - pkief.material-icon-theme
+    - redhat.vscode-yaml
+    - styled-components.vscode-styled-components
+    - tyriar.sort-lines
+    - visualstudioexptteam.intellicode-api-usage-examples
+    - visualstudioexptteam.vscodeintellicode
+    - wallabyjs.quokka-vscode
+  register: vscode_extension_install
+  changed_when: "'already installed' not in vscode_extension_install.stdout"
+  failed_when: >
+    vscode_extension_install.rc != 0 and
+    'already installed' not in vscode_extension_install.stdout

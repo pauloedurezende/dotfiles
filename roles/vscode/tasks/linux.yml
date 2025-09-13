@@ -1,0 +1,71 @@
+---
+- name: Install required packages for VS Code installation
+  ansible.builtin.apt:
+    name:
+      - wget
+      - gpg
+      - apt-transport-https
+    state: present
+    update_cache: true
+  become: true
+
+- name: Download Microsoft GPG key
+  ansible.builtin.get_url:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    dest: /tmp/microsoft.asc
+    mode: '0644'
+  no_log: true
+
+- name: Convert and install Microsoft GPG key
+  ansible.builtin.shell: |
+    gpg --dearmor < /tmp/microsoft.asc > /tmp/microsoft.gpg
+    install -D -o root -g root -m 644 /tmp/microsoft.gpg \
+      /usr/share/keyrings/microsoft.gpg
+    rm -f /tmp/microsoft.asc /tmp/microsoft.gpg
+  become: true
+  no_log: true
+  changed_when: true
+  when: not ansible_check_mode
+
+- name: Add VS Code repository (new format)
+  ansible.builtin.copy:
+    content: |
+      Types: deb
+      URIs: https://packages.microsoft.com/repos/code
+      Suites: stable
+      Components: main
+      Architectures: amd64,arm64,armhf
+      Signed-By: /usr/share/keyrings/microsoft.gpg
+    dest: /etc/apt/sources.list.d/vscode.sources
+    mode: '0644'
+    owner: root
+    group: root
+  become: true
+
+- name: Update apt cache after adding repository
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  when: not ansible_check_mode
+
+- name: Install VS Code via apt
+  ansible.builtin.apt:
+    name: code
+    state: present
+  become: true
+  when: not ansible_check_mode
+
+- name: Create VS Code configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/Code/User"
+    state: directory
+    mode: '0755'
+  when: vscode_settings_enabled
+
+- name: Apply VS Code settings template
+  ansible.builtin.template:
+    src: settings.json.j2
+    dest: "{{ dotfiles_home }}/.config/Code/User/settings.json"
+    mode: '0644'
+    backup: true
+  when: vscode_settings_enabled
