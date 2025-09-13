@@ -2,3 +2,11 @@
 - name: Include macOS-specific tasks
   ansible.builtin.include_tasks: macos.yml
   when: is_macos and onepassword_cli_enabled
+
+- name: Include Linux-specific tasks
+  ansible.builtin.include_tasks: linux.yml
+  when: is_linux and onepassword_cli_enabled
+
+- name: Include common tasks
+  ansible.builtin.include_tasks: commons.yml
+  when: onepassword_cli_enabled
