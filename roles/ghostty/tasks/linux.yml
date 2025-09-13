@@ -1,0 +1,46 @@
+---
+- name: Create cache directory for downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+
+- name: Get latest Ghostty DEB release from GitHub
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest
+    return_content: true
+  register: ghostty_release
+  delegate_to: localhost
+  run_once: true
+  when: not ansible_check_mode
+
+- name: Extract DEB download URL
+  ansible.builtin.set_fact:
+    ghostty_deb_url: >-
+      {{
+        ghostty_release.json.assets |
+        selectattr('name', 'match', '.*\\.deb$') |
+        first |
+        attr('browser_download_url')
+      }}
+  when: not ansible_check_mode
+
+- name: Download Ghostty DEB package
+  ansible.builtin.get_url:
+    url: "{{ ghostty_deb_url }}"
+    dest: "{{ dotfiles_home }}/.cache/ghostty.deb"
+    mode: '0644'
+  when: not ansible_check_mode
+
+- name: Install Ghostty from DEB package
+  ansible.builtin.apt:
+    deb: "{{ dotfiles_home }}/.cache/ghostty.deb"
+    state: present
+  become: true
+  when: not ansible_check_mode
+
+- name: Clean up downloaded DEB package
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache/ghostty.deb"
+    state: absent
+  when: not ansible_check_mode
