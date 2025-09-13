@@ -5,3 +5,7 @@ fonts_jetbrains_mono_nerd_download_url: >-
   https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.zip
 
 fonts_refresh_cache: true
+
+# Linux-specific variables
+fonts_linux_user_fonts_dir: "{{ ansible_env.HOME }}/.local/share/fonts"
+fonts_linux_temp_dir: "/tmp"
