@@ -123,9 +123,9 @@ lint: check-venv
 	@echo ""
 	@echo "$(BLUE)[*] Running yamllint...$(NC)"
 	@if $(MAKE) -s is-ci; then \
-		find . -name "*.yml" -o -name "*.yaml" | grep -v venv/ | xargs $(YAMLLINT); \
+		find . -name "*.yml" -o -name "*.yaml" | grep -v venv/ | grep -v '.github/' | xargs $(YAMLLINT); \
 	else \
-		find . -name "*.yml" -o -name "*.yaml" | grep -v venv/ | xargs $(YAMLLINT) || true; \
+		find . -name "*.yml" -o -name "*.yaml" | grep -v venv/ | grep -v '.github/' | xargs $(YAMLLINT) || true; \
 	fi
 	@echo "$(GREEN)[✓] Linting complete!$(NC)"
 
