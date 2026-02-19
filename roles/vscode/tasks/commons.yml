@@ -9,11 +9,11 @@
   ansible.builtin.command: code --install-extension {{ item }}
   loop:
     - adpyke.codesnap
-    - dbaeumer.vscode-eslint
-    - dsznajder.es7-react-js-snippets
+    - biomejs.biome
     - eamodio.gitlens
     - editorconfig.editorconfig
     - esbenp.prettier-vscode
+    - github.copilot-chat
     - github.github-vscode-theme
     - github.vscode-github-actions
     - github.vscode-pull-request-github
@@ -21,14 +21,9 @@
     - irongeek.vscode-env
     - miguelsolorio.fluent-icons
     - nicoespeon.abracadabra
-    - orta.vscode-jest
     - pkief.material-icon-theme
     - redhat.vscode-yaml
-    - styled-components.vscode-styled-components
     - tyriar.sort-lines
-    - visualstudioexptteam.intellicode-api-usage-examples
-    - visualstudioexptteam.vscodeintellicode
-    - wallabyjs.quokka-vscode
   register: vscode_extension_install
   changed_when: "'already installed' not in vscode_extension_install.stdout"
   failed_when: >
