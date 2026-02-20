@@ -1,6 +1,8 @@
 {
   "model": "opusplan",
-  "defaultMode": "bypassPermissions",
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
   "attribution": {
     "commit": "",
     "pr": ""
