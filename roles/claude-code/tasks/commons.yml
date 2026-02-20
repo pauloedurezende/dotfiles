@@ -5,8 +5,22 @@
   changed_when: false
   failed_when: false
 
+- name: Download Claude Code installer
+  ansible.builtin.get_url:
+    url: https://claude.ai/install.sh
+    dest: /tmp/claude_install.sh
+    mode: '0755'
+  when: claude_code_version.rc != 0
+
 - name: Install Claude Code
-  ansible.builtin.shell: curl -fsSL https://claude.ai/install.sh | bash
+  ansible.builtin.command: bash /tmp/claude_install.sh
+  changed_when: true
+  when: claude_code_version.rc != 0
+
+- name: Remove Claude Code installer
+  ansible.builtin.file:
+    path: /tmp/claude_install.sh
+    state: absent
   when: claude_code_version.rc != 0
 
 - name: Create Claude Code configuration directory
