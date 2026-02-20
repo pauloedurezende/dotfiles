@@ -1,6 +1,10 @@
 {
   "model": "opusplan",
   "defaultMode": "bypassPermissions",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
