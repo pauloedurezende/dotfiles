@@ -1,0 +1,8 @@
+{
+  "model": "opusplan",
+  "defaultMode": "bypassPermissions",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  }
+}
