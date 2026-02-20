@@ -1,0 +1,4 @@
+---
+- name: Include common tasks
+  ansible.builtin.include_tasks: commons.yml
+  when: claude_code_enabled
