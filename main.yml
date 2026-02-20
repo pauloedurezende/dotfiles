@@ -42,6 +42,8 @@
       tags: [yarn]
     - role: pnpm
       tags: [pnpm]
+    - role: claude-code
+      tags: [claude-code]
     - role: github-cli
       tags: [github-cli]
     - role: onepassword-cli
