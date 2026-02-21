@@ -13,3 +13,6 @@ claude_code_skills:
   - source: "vercel-labs/skills"
     skills:
       - find-skills
+  - source: "vercel/turborepo"
+    skills:
+      - turborepo
