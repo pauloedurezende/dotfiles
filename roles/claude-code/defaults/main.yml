@@ -16,3 +16,6 @@ claude_code_skills:
   - source: "vercel/turborepo"
     skills:
       - turborepo
+  - source: "cline/cline"
+    skills:
+      - create-pull-request
