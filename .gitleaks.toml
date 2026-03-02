@@ -1,0 +1,20 @@
+title = "Gitleaks Configuration"
+
+# Global allowlist for known false positives.
+# These are example/placeholder values used in code comments as documentation,
+# not actual credentials or sensitive data.
+[allowlist]
+  description = "Ignore false positives in code comments with example placeholder values"
+
+  # regexTarget = "line" matches the entire line rather than just the detected secret,
+  # allowing us to target specific comment patterns.
+  regexTarget = "line"
+
+  regexes = [
+    # 1Password SSH key configuration examples in Ansible role comments.
+    # Files: roles/onepassword-cli/defaults/main.yml
+    #        roles/onepassword-cli/templates/agent.toml.j2
+    # These lines document required vault variables with placeholder values
+    # such as "abcd1234efgh5678" — they are not real credentials.
+    '''#.*vault_onepassword_ssh_key_(item|vault)_id''',
+  ]
