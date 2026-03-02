@@ -7,6 +7,6 @@ onepassword_ssh_agent_config_enabled: true
 # SSH key configuration - stored in vault for security
 # The actual configuration should be in group_vars/all/vault.yml
 # Configure the following variables directly in vault.yml:
-# vault_onepassword_ssh_key_item_id: "abcd1234efgh5678"
+# vault_onepassword_ssh_key_item_id: "abcd1234efgh5678"  # gitleaks:allow
 # Required: 1Password item ID
-# vault_onepassword_ssh_key_vault_id: "work_vault_id"    # Required: vault ID
+# vault_onepassword_ssh_key_vault_id: "work_vault_id"    # Required: vault ID  # gitleaks:allow

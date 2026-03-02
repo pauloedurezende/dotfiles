@@ -15,6 +15,6 @@ vault = "{{ vault_onepassword_ssh_key_vault_id }}"
 # Use 'make vault-edit' to add your configuration
 #
 # Example vault configuration:
-# vault_onepassword_ssh_key_item_id: "abcd1234efgh5678"  # Required: item ID
-# vault_onepassword_ssh_key_vault_id: "work_vault_id"    # Required: vault ID
+# vault_onepassword_ssh_key_item_id: "abcd1234efgh5678"  # Required: item ID  # gitleaks:allow
+# vault_onepassword_ssh_key_vault_id: "work_vault_id"    # Required: vault ID  # gitleaks:allow
 {% endif %}
