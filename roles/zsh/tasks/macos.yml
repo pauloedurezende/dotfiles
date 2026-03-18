@@ -1,0 +1,25 @@
+---
+- name: Get current shell
+  ansible.builtin.shell: echo $SHELL
+  register: zsh_current_shell
+  changed_when: false
+
+- name: Install zsh via Homebrew
+  community.general.homebrew:
+    name: zsh
+    state: present
+
+- name: Add Homebrew zsh to /etc/shells
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "{{ homebrew_bin_path }}/zsh"
+    state: present
+  become: true
+  when: zsh_set_default_shell
+
+- name: Set zsh as default shell
+  ansible.builtin.command: chsh -s "{{ homebrew_bin_path }}/zsh"
+  when:
+    - zsh_set_default_shell
+    - zsh_current_shell.stdout != homebrew_bin_path + "/zsh"
+  changed_when: true

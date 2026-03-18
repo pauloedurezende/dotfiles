@@ -1,0 +1,24 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: fonts_homebrew_check
+  changed_when: false
+  failed_when: fonts_homebrew_check.rc != 0
+
+- name: Install JetBrains Mono Nerd Font
+  community.general.homebrew_cask:
+    name: "{{ fonts_jetbrains_mono_nerd_homebrew_cask }}"
+    state: present
+  when: fonts_jetbrains_mono_nerd_enabled
+
+- name: Verify JetBrains Mono Nerd Font installation
+  ansible.builtin.shell: |
+    set -o pipefail
+    ls "{{ dotfiles_home }}/Library/Fonts" | grep -i jetbrains || \
+    system_profiler SPFontsDataType | grep -i "jetbrains mono nerd font"
+  args:
+    executable: /bin/bash
+  register: fonts_verify
+  changed_when: false
+  failed_when: false
+  when: fonts_jetbrains_mono_nerd_enabled

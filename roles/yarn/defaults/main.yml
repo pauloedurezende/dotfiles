@@ -1,0 +1,4 @@
+---
+yarn_versions: ["latest"]
+yarn_plugin_url: "https://github.com/twuni/asdf-yarn"
+yarn_config_enabled: true

@@ -1,0 +1,55 @@
+---
+claude_code_enabled: true
+claude_code_settings_enabled: true
+claude_code_skills_enabled: true
+claude_code_rtk_enabled: true
+
+claude_code_skills:
+  - source: "github/awesome-copilot"
+    skills:
+      - chrome-devtools
+      - gh-cli
+      - prd
+      - git-commit
+  - source: "vercel-labs/skills"
+    skills:
+      - find-skills
+  - source: "vercel/turborepo"
+    skills:
+      - turborepo
+  - source: "cline/cline"
+    skills:
+      - create-pull-request
+
+claude_code_mcp_enabled: true
+
+# MCP server API keys are stored in vault for security.
+# Configure in group_vars/all/vault.yml:
+#   vault_context7_api_key: "your-api-key"  # gitleaks:allow
+
+claude_code_mcp_servers:
+  - name: context7
+    transport: http
+    url: "https://mcp.context7.com/mcp"
+    env:
+      CONTEXT7_API_KEY: "{{ vault_context7_api_key }}"
+    headers:
+      - "CONTEXT7_API_KEY: $CONTEXT7_API_KEY"
+
+  - name: figma-desktop
+    transport: http
+    url: "http://127.0.0.1:3845/mcp"
+
+  - name: linear
+    transport: http
+    url: "https://mcp.linear.app/mcp"
+
+  - name: sentry
+    transport: http
+    url: "https://mcp.sentry.dev/mcp"
+
+  - name: playwright
+    transport: stdio
+    command: npx
+    args:
+      - "@playwright/mcp@latest"

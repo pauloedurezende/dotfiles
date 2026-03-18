@@ -1,0 +1,4 @@
+---
+github_cli_versions: ["latest"]
+github_cli_plugin_url: "https://github.com/bartlomiejdanek/asdf-github-cli"
+github_cli_config_enabled: true

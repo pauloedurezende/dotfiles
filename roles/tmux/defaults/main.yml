@@ -1,0 +1,3 @@
+---
+tmux_versions: ["latest"]
+tmux_plugin_url: "https://github.com/pauloedurezende/asdf-tmux"

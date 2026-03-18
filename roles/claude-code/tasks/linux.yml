@@ -1,0 +1,62 @@
+---
+- name: Check RTK installation
+  ansible.builtin.command: rtk --version
+  register: rtk_version_check
+  changed_when: false
+  failed_when: false
+
+- name: Get latest RTK version from GitHub
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/rtk-ai/rtk/releases/latest
+    return_content: true
+  register: rtk_release
+  delegate_to: localhost
+  run_once: true
+  when: rtk_version_check.rc != 0 and not ansible_check_mode
+
+- name: Extract latest RTK version
+  ansible.builtin.set_fact:
+    rtk_latest_version: >-
+      {{
+        rtk_release.json.tag_name | regex_replace('^v', '')
+      }}
+  when: rtk_version_check.rc != 0 and not ansible_check_mode
+
+- name: Check architecture for RTK
+  ansible.builtin.set_fact:
+    rtk_arch: >-
+      {{ 'x86_64-unknown-linux-musl' if ansible_architecture == 'x86_64'
+         else 'aarch64-unknown-linux-gnu' }}
+  when: rtk_version_check.rc != 0
+
+- name: Create cache directory for downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+  when: rtk_version_check.rc != 0
+
+- name: Download RTK binary for Linux
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/rtk-ai/rtk/releases/download/
+      v{{ rtk_latest_version }}/rtk-{{ rtk_arch }}.tar.gz
+    dest: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
+    mode: '0644'
+  when: rtk_version_check.rc != 0 and not ansible_check_mode
+
+- name: Extract and install RTK binary
+  ansible.builtin.unarchive:
+    src: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+    extra_opts: [--strip-components=1]
+  become: true
+  when: rtk_version_check.rc != 0 and not ansible_check_mode
+
+- name: Clean up downloaded archive
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
+    state: absent
+  when: rtk_version_check.rc != 0 and not ansible_check_mode

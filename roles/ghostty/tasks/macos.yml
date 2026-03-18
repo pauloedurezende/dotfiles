@@ -1,0 +1,11 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: ghostty_homebrew_check
+  changed_when: false
+  failed_when: ghostty_homebrew_check.rc != 0
+
+- name: Install Ghostty via Homebrew
+  community.general.homebrew_cask:
+    name: ghostty
+    state: present

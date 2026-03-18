@@ -1,0 +1,11 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: homebrew_check
+  changed_when: false
+  failed_when: homebrew_check.rc != 0
+
+- name: Install 1Password CLI via Homebrew
+  community.general.homebrew_cask:
+    name: "1password-cli"
+    state: present

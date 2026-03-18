@@ -1,0 +1,41 @@
+---
+- name: Manage GitHub CLI via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: github-cli
+      url: "{{ github_cli_plugin_url }}"
+      versions: "{{ github_cli_versions }}"
+      global: "{{ github_cli_versions[0] }}"
+
+- name: Create GitHub CLI config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/gh"
+    state: directory
+    mode: '0755'
+  when: github_cli_config_enabled
+
+- name: Generate GitHub CLI configuration
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ dotfiles_home }}/.config/gh/config.yml"
+    mode: '0644'
+    backup: true
+  when: github_cli_config_enabled
+
+- name: Install GitHub CLI extensions
+  ansible.builtin.shell: |
+    set -o pipefail
+    export PATH="{{ asdf_binary_install_path }}:${PATH}"
+    export ASDF_DATA_DIR="{{ asdf_dir }}"
+    gh extension install {{ item }}
+  args:
+    executable: /bin/bash
+  loop:
+    - "github/gh-copilot"
+    - "dlvhdr/gh-dash"
+  register: gh_extension_result
+  changed_when: "'Successfully installed' in gh_extension_result.stderr"
+  failed_when: false

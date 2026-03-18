@@ -1,0 +1,19 @@
+---
+- name: Manage pnpm via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: pnpm
+      url: "{{ pnpm_plugin_url }}"
+      versions: "{{ pnpm_versions }}"
+      global: "{{ pnpm_versions[0] }}"
+
+- name: Generate pnpm configuration
+  ansible.builtin.template:
+    src: pnpmrc.j2
+    dest: "{{ dotfiles_home }}/.pnpmrc"
+    mode: '0644'
+    backup: true
+  when: pnpm_config_enabled

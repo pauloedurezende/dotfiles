@@ -1,0 +1,12 @@
+---
+- name: Install GPG and pinentry packages
+  ansible.builtin.package:
+    name:
+      - gnupg
+      - pinentry-gnome3
+    state: present
+  become: true
+
+- name: Set pinentry program path for Linux
+  ansible.builtin.set_fact:
+    gpg_pinentry_program: "/usr/bin/pinentry-gnome3"

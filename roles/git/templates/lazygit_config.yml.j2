@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+# Lazygit Configuration
+
+# Git integration settings
+git:
+  overrideGpg: true  # Prevents spawning separate process (fixes terminal conflicts)
+  
+# OS specific settings
+os:
+  edit: 'vim {{ "{{filename}}" }}'
+  editAtLine: 'vim {{ "{{filename}}" }} +{{ "{{line}}" }}'
+  open: '{{ "open" if ansible_os_family == "Darwin" else "xdg-open" }} {{ "{{filename}}" }}'

@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+# GitHub CLI configuration optimized for SSH
+
+# Use SSH for all git operations
+git_protocol: ssh
+
+# What editor gh should run when creating issues, pull requests, etc
+editor: nvim
+
+# When to interactively prompt for confirmation
+prompt: enabled
+
+# A pager program to send command output to
+pager: less
+
+# Aliases allow you to create nicknames for gh commands
+aliases:
+    co: pr checkout
+    pv: pr view
+    pc: pr create
+    il: issue list
+    ic: issue create
+    iv: issue view

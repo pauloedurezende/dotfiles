@@ -1,0 +1,11 @@
+---
+- name: Install tmux build dependencies on Linux
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - libevent-dev
+      - libncurses5-dev
+      - pkg-config
+    state: present
+    update_cache: true
+  become: true

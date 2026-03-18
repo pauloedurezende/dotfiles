@@ -1,0 +1,4 @@
+---
+fzf_versions: ["latest"]
+fzf_plugin_url: "https://github.com/pauloedurezende/asdf-fzf"
+fzf_config_enabled: true

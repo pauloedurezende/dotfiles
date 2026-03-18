@@ -1,0 +1,26 @@
+---
+- name: Manage Node.js via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: nodejs
+      url: "{{ nodejs_plugin_url }}"
+      versions: "{{ nodejs_versions }}"
+      global: "{{ nodejs_versions[0] }}"
+
+- name: Create npm config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/npm"
+    state: directory
+    mode: '0755'
+  when: nodejs_npm_config_enabled
+
+- name: Generate npm configuration
+  ansible.builtin.template:
+    src: npmrc.j2
+    dest: "{{ dotfiles_home }}/.npmrc"
+    mode: '0644'
+    backup: true
+  when: nodejs_npm_config_enabled

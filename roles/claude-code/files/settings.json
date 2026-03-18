@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "model": "opusplan",
+  "effortLevel": "high",
+  "autoUpdatesChannel": "latest",
+
+  "permissions": { "defaultMode": "bypassPermissions" },
+  "skipDangerousModePermissionPrompt": true,
+  "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" },
+  "enabledPlugins": { "frontend-design@claude-plugins-official": true },
+
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/play-sound.sh",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
