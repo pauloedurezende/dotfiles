@@ -11,4 +11,4 @@
     name: caddy
     state: reloaded
   become: true
-  when: is_linux
+  when: is_linux and not ansible_check_mode
