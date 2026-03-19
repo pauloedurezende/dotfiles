@@ -1,0 +1,64 @@
+---
+- name: Create Caddy configuration directory
+  ansible.builtin.file:
+    path: "{{ caddy_config_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ dotfiles_user }}"
+
+- name: Create Caddy data directory
+  ansible.builtin.file:
+    path: "{{ caddy_data_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ dotfiles_user }}"
+
+- name: Deploy Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ caddy_config_dir }}/Caddyfile"
+    mode: "0644"
+    owner: "{{ dotfiles_user }}"
+    backup: true
+  notify: Reload caddy
+
+- name: Symlink Caddyfile to Homebrew default location (macOS)
+  ansible.builtin.file:
+    src: "{{ caddy_config_dir }}/Caddyfile"
+    dest: "{{ homebrew_prefix }}/etc/Caddyfile"
+    state: link
+    force: true
+  when: is_macos
+
+- name: Symlink Caddyfile to system location (Linux)
+  ansible.builtin.file:
+    src: "{{ caddy_config_dir }}/Caddyfile"
+    dest: /etc/caddy/Caddyfile
+    state: link
+    force: true
+  become: true
+  when: is_linux
+
+- name: Enable and start Caddy service (macOS)
+  ansible.builtin.command: brew services start caddy
+  register: caddy_brew_service
+  changed_when: "'Successfully started' in caddy_brew_service.stdout"
+  failed_when:
+    - caddy_brew_service.rc != 0
+    - "'already started' not in caddy_brew_service.stdout"
+  when: is_macos and not ansible_check_mode
+
+- name: Enable and start Caddy service (Linux)
+  ansible.builtin.systemd:
+    name: caddy
+    enabled: true
+    state: started
+  become: true
+  when: is_linux and not ansible_check_mode
+
+- name: Trust Caddy local CA certificate
+  ansible.builtin.command: caddy trust
+  register: caddy_trust_result
+  changed_when: caddy_trust_result.rc == 0
+  failed_when: false
+  when: not ansible_check_mode

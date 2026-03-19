@@ -1,0 +1,14 @@
+---
+- name: Restart Caddy service (macOS)
+  listen: Reload caddy
+  ansible.builtin.command: brew services restart caddy
+  changed_when: true
+  when: is_macos
+
+- name: Reload Caddy service (Linux)
+  listen: Reload caddy
+  ansible.builtin.systemd:
+    name: caddy
+    state: reloaded
+  become: true
+  when: is_linux

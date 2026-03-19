@@ -44,6 +44,8 @@
       tags: [yarn]
     - role: pnpm
       tags: [pnpm]
+    - role: caddy
+      tags: [caddy]
     - role: claude-code
       tags: [claude-code]
     - role: github-cli
