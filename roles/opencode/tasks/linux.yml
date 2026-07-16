@@ -1,0 +1,106 @@
+---
+- name: Add OpenCode install directory to PATH in shell profile
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.zprofile"
+    regexp: '^export PATH=".*\.opencode/bin.*:\$PATH"$'
+    line: 'export PATH="{{ opencode_linux_install_dir }}:$PATH"'
+    create: true
+    mode: '0644'
+
+- name: Install OpenCode via official installer
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL https://opencode.ai/install | bash
+  args:
+    executable: /bin/bash
+  register: opencode_install_result
+  changed_when: "'already installed' not in opencode_install_result.stdout"
+  environment:
+    HOME: "{{ dotfiles_home }}"
+    PATH: "{{ opencode_linux_tool_path }}"
+
+- name: Verify OpenCode installation
+  ansible.builtin.command: opencode --version
+  register: opencode_version_check
+  changed_when: false
+  environment:
+    PATH: "{{ opencode_linux_tool_path }}"
+
+- name: Check RTK installation
+  ansible.builtin.command: rtk --version
+  register: opencode_rtk_version_check
+  changed_when: false
+  failed_when: false
+  environment:
+    PATH: "{{ opencode_linux_tool_path }}"
+  when: opencode_rtk_enabled
+
+- name: Get latest RTK version from GitHub
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/rtk-ai/rtk/releases/latest
+    return_content: true
+  register: opencode_rtk_release
+  delegate_to: localhost
+  run_once: true
+  when: >-
+    opencode_rtk_enabled and
+    opencode_rtk_version_check.rc != 0 and
+    not ansible_check_mode
+
+- name: Extract latest RTK version
+  ansible.builtin.set_fact:
+    opencode_rtk_latest_version: >-
+      {{ opencode_rtk_release.json.tag_name | regex_replace('^v', '') }}
+  when: >-
+    opencode_rtk_enabled and
+    opencode_rtk_version_check.rc != 0 and
+    not ansible_check_mode
+
+- name: Check architecture for RTK
+  ansible.builtin.set_fact:
+    opencode_rtk_arch: >-
+      {{ 'x86_64-unknown-linux-musl'
+         if ansible_facts['architecture'] == 'x86_64'
+         else 'aarch64-unknown-linux-gnu' }}
+  when: opencode_rtk_enabled and opencode_rtk_version_check.rc != 0
+
+- name: Create cache directory for RTK downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+  when: opencode_rtk_enabled and opencode_rtk_version_check.rc != 0
+
+- name: Download RTK binary for Linux
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/rtk-ai/rtk/releases/download/
+      v{{ opencode_rtk_latest_version }}/rtk-{{ opencode_rtk_arch }}.tar.gz
+    dest: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
+    mode: '0644'
+  when: >-
+    opencode_rtk_enabled and
+    opencode_rtk_version_check.rc != 0 and
+    not ansible_check_mode
+
+- name: Extract and install RTK binary
+  ansible.builtin.unarchive:
+    src: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+    extra_opts: [--strip-components=1]
+  become: true
+  when: >-
+    opencode_rtk_enabled and
+    opencode_rtk_version_check.rc != 0 and
+    not ansible_check_mode
+
+- name: Clean up RTK downloaded archive
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
+    state: absent
+  when: >-
+    opencode_rtk_enabled and
+    opencode_rtk_version_check.rc != 0 and
+    not ansible_check_mode

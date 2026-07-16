@@ -1,0 +1,5 @@
+---
+nodejs_versions: ["24.15.0"]
+nodejs_plugin_url: "https://github.com/asdf-vm/asdf-nodejs"
+nodejs_npm_config_enabled: true
+nodejs_npm_global_prefix: "{{ dotfiles_home }}/.local/npm-global"

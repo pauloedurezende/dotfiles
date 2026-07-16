@@ -1,0 +1,4 @@
+// Zed Keymap Overrides
+// Base keymap: "VSCode" (set in settings.json).
+// Add { "context": "...", "bindings": { ... } } objects below for custom overrides.
+[]

@@ -1,0 +1,18 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: zed_homebrew_check
+  changed_when: false
+  failed_when: zed_homebrew_check.rc != 0
+
+- name: Install Zed via Homebrew Cask
+  community.general.homebrew_cask:
+    name: zed
+    state: present
+
+- name: Create Zed configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/zed"
+    state: directory
+    mode: "0755"
+  when: zed_settings_enabled

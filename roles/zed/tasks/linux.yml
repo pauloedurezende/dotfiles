@@ -1,0 +1,39 @@
+---
+- name: Check if Zed is already installed
+  ansible.builtin.command: command -v zed
+  register: zed_check
+  changed_when: false
+  failed_when: false
+
+- name: Create cache directory for downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: "0755"
+  when: zed_check.rc != 0 and not ansible_check_mode
+
+- name: Download Zed install script
+  ansible.builtin.get_url:
+    url: https://zed.dev/install.sh
+    dest: "{{ dotfiles_home }}/.cache/zed-install.sh"
+    mode: "0755"
+  when: zed_check.rc != 0 and not ansible_check_mode
+
+- name: Install Zed via official install script
+  ansible.builtin.command: "{{ dotfiles_home }}/.cache/zed-install.sh"
+  args:
+    creates: "{{ dotfiles_home }}/.local/bin/zed"
+  when: zed_check.rc != 0 and not ansible_check_mode
+
+- name: Remove Zed install script
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache/zed-install.sh"
+    state: absent
+  when: not ansible_check_mode
+
+- name: Create Zed configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/zed"
+    state: directory
+    mode: "0755"
+  when: zed_settings_enabled

@@ -1,0 +1,82 @@
+{
+  // ─── Base & Keymap ───────────────────────────────────
+  "base_keymap": "VSCode",
+  "vim_mode": true,
+
+  // ─── Appearance ──────────────────────────────────────
+  "theme": "Ayu Dark",
+  "icon_theme": "JetBrains New UI Icons (Dark)",
+
+  // ─── Editor Font ─────────────────────────────────────
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "buffer_font_size": 15,
+  "buffer_line_height": { "custom": 1.8 },
+  "buffer_font_features": { "calt": true },
+
+  // ─── Editor Behavior ─────────────────────────────────
+  "tab_size": 2,
+  "soft_wrap": "none",
+  "wrap_guides": [80, 120],
+  "scroll_beyond_last_line": "off",
+  "auto_signature_help": false,
+  "current_line_highlight": "gutter",
+  "format_on_save": "on",
+  "ensure_final_newline_on_save": true,
+  "code_lens": "on",
+
+  // ─── UI & Panels ─────────────────────────────────────
+  "project_panel": { "dock": "right" },
+
+  // ─── Files ───────────────────────────────────────────
+  "file_scan_exclusions": ["**/node_modules"],
+  "file_types": {
+    "env": [".env.*", ".env"],
+    "Git Attributes": ["**/{git,.git,.git/info}/attributes"],
+    "Git Config": ["*.gitconfig", "**/{git,.git,.git/modules,.git/modules/*}/config"],
+    "Git Ignore": ["**/{git,.git}/ignore", "**/.git/info/exclude"]
+  },
+
+  // ─── Terminal ────────────────────────────────────────
+  "terminal": {
+    "shell": { "program": "zsh" },
+    "font_family": "JetBrainsMono Nerd Font Mono",
+    "font_size": 14,
+    "line_height": "standard",
+    "blinking": "off",
+    "copy_on_select": true
+  },
+
+  // ─── AI & Predictions ────────────────────────────────
+  "edit_predictions": { "provider": "none" },
+
+  // ─── Git ─────────────────────────────────────────────
+  "git": { "inline_blame": { "enabled": false } },
+
+  // ─── Languages ───────────────────────────────────────
+  "languages": {
+    "TypeScript": {
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": { "source.fixAll.biome": true }
+    },
+    "TSX": {
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": { "source.fixAll.biome": true }
+    },
+    "JavaScript": {
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": { "source.fixAll.biome": true }
+    },
+    "JSON": { "formatter": "language_server" },
+    "JSONC": { "formatter": "language_server" }
+  },
+
+  // ─── Extensions ──────────────────────────────────────
+  "auto_install_extensions": {
+    "biome": true,
+    "git-firefly": true,
+    "env": true,
+    "yaml": true,
+    "editorconfig": true,
+    "jetbrains-new-ui-icons": true
+  }
+}

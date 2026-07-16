@@ -1,0 +1,27 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: vscode_homebrew_check
+  changed_when: false
+  failed_when: vscode_homebrew_check.rc != 0
+
+- name: Install Visual Studio Code via Homebrew Cask
+  community.general.homebrew_cask:
+    name: visual-studio-code
+    state: present
+
+- name: Create VS Code configuration directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/Library/Application Support/Code/User"
+    state: directory
+    mode: '0755'
+  when: vscode_settings_enabled
+
+- name: Apply VS Code settings template
+  ansible.builtin.template:
+    src: settings.json.j2
+    dest: >-
+      {{ dotfiles_home }}/Library/Application Support/Code/User/settings.json
+    mode: '0644'
+    backup: true
+  when: vscode_settings_enabled

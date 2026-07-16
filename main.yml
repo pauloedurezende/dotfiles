@@ -1,0 +1,83 @@
+---
+- name: Development Environment Configuration
+  hosts: local
+  gather_facts: true
+
+  pre_tasks:
+    - name: Check if running on macOS
+      ansible.builtin.set_fact:
+        is_macos: "{{ ansible_facts['distribution'] == 'MacOSX' }}"
+      tags: always
+
+    - name: Check if running on Linux
+      ansible.builtin.set_fact:
+        is_linux: "{{ ansible_facts['distribution'] in ['Ubuntu', 'Debian'] }}"
+      tags: always
+
+    - name: Upgrade certifi in Ansible Python env  # noqa: package-latest
+      ansible.builtin.pip:
+        name: certifi
+        state: latest
+        executable: "{{ ansible_playbook_python | dirname }}/pip"
+      tags: always
+
+    - name: Resolve certifi CA bundle path
+      ansible.builtin.command: >-
+        {{ ansible_playbook_python }} -c
+        "import certifi; print(certifi.where())"
+      register: certifi_path
+      changed_when: false
+      tags: always
+
+    - name: Export CA bundle path as a fact for all roles
+      ansible.builtin.set_fact:
+        dotfiles_ca_bundle: "{{ certifi_path.stdout }}"
+      tags: always
+
+  roles:
+    - role: homebrew
+      tags: [homebrew]
+    - role: fonts
+      tags: [fonts]
+    - role: zsh
+      tags: [zsh]
+    - role: gpg
+      tags: [gpg]
+    - role: git
+      tags: [git]
+    - role: asdf
+      tags: [asdf]
+    - role: rust
+      tags: [rust]
+    - role: tmux
+      tags: [tmux]
+    - role: bat
+      tags: [bat]
+    - role: fzf
+      tags: [fzf]
+    - role: zoxide
+      tags: [zoxide]
+    - role: eza
+      tags: [eza]
+    - role: nodejs
+      tags: [nodejs]
+    - role: yarn
+      tags: [yarn]
+    - role: pnpm
+      tags: [pnpm]
+    - role: opencode
+      tags: [opencode]
+    - role: caddy
+      tags: [caddy]
+    - role: claude-code
+      tags: [claude-code]
+    - role: github-cli
+      tags: [github-cli]
+    - role: onepassword-cli
+      tags: [onepassword-cli]
+    - role: ghostty
+      tags: [ghostty]
+    - role: vscode
+      tags: [vscode]
+    - role: zed
+      tags: [zed]

@@ -1,0 +1,23 @@
+---
+- name: Verify Zed installation
+  ansible.builtin.command: zed --version
+  register: zed_version
+  changed_when: false
+  failed_when: zed_version.rc != 0
+  when: not ansible_check_mode
+
+- name: Apply Zed settings
+  ansible.builtin.copy:
+    src: settings.json
+    dest: "{{ dotfiles_home }}/.config/zed/settings.json"
+    mode: "0644"
+    backup: true
+  when: zed_settings_enabled
+
+- name: Apply Zed keymap
+  ansible.builtin.copy:
+    src: keymap.json
+    dest: "{{ dotfiles_home }}/.config/zed/keymap.json"
+    mode: "0644"
+    backup: true
+  when: zed_settings_enabled

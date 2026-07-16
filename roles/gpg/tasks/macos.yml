@@ -1,0 +1,11 @@
+---
+- name: Install GPG and pinentry packages
+  community.general.homebrew:
+    name:
+      - gnupg
+      - pinentry-mac
+    state: present
+
+- name: Set pinentry program path for macOS
+  ansible.builtin.set_fact:
+    gpg_pinentry_program: "{{ homebrew_prefix }}/bin/pinentry-mac"

@@ -1,0 +1,122 @@
+---
+name: Playbook Validation
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  actionlint:
+    name: Workflow Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run actionlint
+        shell: bash
+        run: |
+          docker run --rm -v "$(pwd):/repo" --workdir /repo \
+            rhysd/actionlint:1.7.12 -color
+
+  ansible-lint:
+    name: Ansible Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: actionlint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run ansible-lint
+        run: ansible-lint main.yml
+
+      - name: Run yamllint
+        shell: bash
+        run: |
+          find . -name "*.yml" -o -name "*.yaml" \
+            | grep -v venv/ \
+            | grep -v '.github/' \
+            | xargs yamllint
+
+  syntax-check:
+    name: Syntax Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: ansible-lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate Ansible playbook syntax
+        shell: bash
+        env:
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          ansible-playbook -i inventory.ini main.yml \
+            --vault-password-file <(printf '%s' "$ANSIBLE_VAULT_PASSWORD") \
+            --syntax-check
+
+  dry-run:
+    name: Dry Run Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: syntax-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Test Ansible playbook execution
+        shell: bash
+        env:
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          ansible-playbook -i inventory.ini main.yml \
+            --vault-password-file <(printf '%s' "$ANSIBLE_VAULT_PASSWORD") \
+            --check --diff -v

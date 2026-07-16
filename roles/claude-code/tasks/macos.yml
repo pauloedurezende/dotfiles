@@ -1,0 +1,11 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: rtk_homebrew_check
+  changed_when: false
+  failed_when: rtk_homebrew_check.rc != 0
+
+- name: Install RTK via Homebrew
+  community.general.homebrew:
+    name: rtk
+    state: present

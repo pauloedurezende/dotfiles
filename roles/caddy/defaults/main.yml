@@ -1,0 +1,4 @@
+---
+caddy_enabled: true
+caddy_config_dir: "{{ dotfiles_home }}/.config/caddy"
+caddy_data_dir: "{{ dotfiles_home }}/.local/share/caddy"

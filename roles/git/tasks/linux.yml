@@ -1,0 +1,79 @@
+---
+- name: Install Git
+  ansible.builtin.package:
+    name: git
+    state: present
+  become: true
+
+- name: Create cache directory for downloads
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+
+# Install git-delta manually from GitHub releases
+- name: Get latest git-delta version
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/dandavison/delta/releases/latest
+    return_content: true
+  register: git_git_delta_release
+  when: not ansible_check_mode
+
+- name: Download git-delta deb package
+  ansible.builtin.get_url:
+    url: >
+      https://github.com/dandavison/delta/releases/download/{{
+      git_git_delta_release.json.tag_name }}/git-delta_{{
+      git_git_delta_release.json.tag_name | regex_replace('^v', '') }}_amd64.deb
+    dest: "{{ dotfiles_home }}/.cache/git-delta.deb"
+    mode: '0644'
+  when: not ansible_check_mode
+
+- name: Install git-delta from deb package
+  ansible.builtin.apt:
+    deb: "{{ dotfiles_home }}/.cache/git-delta.deb"
+    state: present
+  become: true
+  when: not ansible_check_mode
+
+- name: Clean up git-delta deb package
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache/git-delta.deb"
+    state: absent
+
+- name: Get latest lazygit version
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/jesseduffield/lazygit/releases/latest
+    return_content: true
+  register: git_lazygit_release
+  when: not ansible_check_mode
+
+- name: Download and extract lazygit
+  ansible.builtin.unarchive:
+    src: >-
+      https://github.com/jesseduffield/lazygit/releases/download/{{
+      git_lazygit_release.json.tag_name }}/lazygit_{{
+      git_lazygit_release.json.tag_name | regex_replace('^v', '')
+      }}_Linux_x86_64.tar.gz
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+    owner: root
+    group: root
+    include:
+      - lazygit
+  become: true
+  when: not ansible_check_mode
+
+- name: Create lazygit config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/lazygit"
+    state: directory
+    mode: '0755'
+
+- name: Apply lazygit configuration template
+  ansible.builtin.template:
+    src: lazygit_config.yml.j2
+    dest: "{{ dotfiles_home }}/.config/lazygit/config.yml"
+    mode: '0644'
+    backup: true

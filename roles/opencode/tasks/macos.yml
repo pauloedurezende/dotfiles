@@ -1,0 +1,17 @@
+---
+- name: Check if Homebrew is available
+  ansible.builtin.command: which brew
+  register: opencode_homebrew_check
+  changed_when: false
+  failed_when: opencode_homebrew_check.rc != 0
+
+- name: Install OpenCode via Homebrew
+  community.general.homebrew:
+    name: opencode
+    state: present
+
+- name: Install RTK via Homebrew
+  community.general.homebrew:
+    name: rtk
+    state: present
+  when: opencode_rtk_enabled

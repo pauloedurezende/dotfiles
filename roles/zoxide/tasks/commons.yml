@@ -1,0 +1,11 @@
+---
+- name: Manage zoxide via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: zoxide
+      url: "{{ zoxide_plugin_url }}"
+      versions: "{{ zoxide_versions }}"
+      global: "{{ zoxide_versions[0] }}"

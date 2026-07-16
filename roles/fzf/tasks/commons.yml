@@ -1,0 +1,25 @@
+---
+- name: Manage fzf via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: fzf
+      url: "{{ fzf_plugin_url }}"
+      versions: "{{ fzf_versions }}"
+      global: "{{ fzf_versions[0] }}"
+
+- name: Create fzf config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/fzf"
+    state: directory
+    mode: '0755'
+  when: fzf_config_enabled
+
+- name: Generate fzf configuration for zsh
+  ansible.builtin.template:
+    src: fzf.zsh.j2
+    dest: "{{ dotfiles_home }}/.fzf.zsh"
+    mode: '0644'
+  when: fzf_config_enabled

@@ -1,0 +1,4 @@
+---
+- name: Include macOS-specific tasks
+  ansible.builtin.include_tasks: macos.yml
+  when: is_macos

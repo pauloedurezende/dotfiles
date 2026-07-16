@@ -1,0 +1,5 @@
+---
+- name: Install Caddy
+  community.general.homebrew:
+    name: caddy
+    state: present

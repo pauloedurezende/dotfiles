@@ -1,0 +1,6 @@
+---
+yarn_enabled: false
+yarn_versions: ["latest"]
+yarn_plugin_url: "https://github.com/twuni/asdf-yarn"
+yarn_config_enabled: true
+yarn_global_folder: "{{ dotfiles_home }}/.config/yarn/global"

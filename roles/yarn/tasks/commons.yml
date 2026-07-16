@@ -1,0 +1,35 @@
+---
+- name: Manage Yarn via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: yarn
+      url: "{{ yarn_plugin_url }}"
+      versions: "{{ yarn_versions }}"
+      global: "{{ yarn_versions[0] }}"
+
+- name: Generate yarn configuration
+  ansible.builtin.template:
+    src: yarnrc.j2
+    dest: "{{ dotfiles_home }}/.yarnrc"
+    mode: '0644'
+    backup: true
+  when: yarn_config_enabled
+
+- name: Ensure yarn global bin directory exists
+  ansible.builtin.file:
+    path: "{{ yarn_global_folder }}/node_modules/.bin"
+    state: directory
+    mode: '0755'
+  when: yarn_config_enabled
+
+- name: Add yarn global bin to PATH in shell profile
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.zprofile"
+    regexp: '^export PATH=".*yarn/global/node_modules/\.bin.*:\$PATH"$'
+    line: 'export PATH="{{ yarn_global_folder }}/node_modules/.bin:$PATH"'
+    create: true
+    mode: '0644'
+  when: yarn_config_enabled

@@ -1,0 +1,19 @@
+# bat configuration file
+
+# Theme
+--theme="Monokai Extended"
+
+# Show line numbers
+--number
+
+# Pager
+--pager="less -RF"
+
+# Style
+--style="full"
+
+# Map file extensions to syntax highlighting
+# Example: --map-syntax "*.jenkinsfile:Groovy"
+
+# Additional options can be added here
+

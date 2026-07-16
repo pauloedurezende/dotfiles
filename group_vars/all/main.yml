@@ -1,0 +1,6 @@
+---
+dotfiles_user: "{{ ansible_facts['user_id'] }}"
+dotfiles_home: "{{ ansible_facts['env']['HOME'] }}"
+
+homebrew_prefix: /opt/homebrew
+homebrew_bin_path: "{{ homebrew_prefix }}/bin"

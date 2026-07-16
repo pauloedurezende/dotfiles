@@ -1,0 +1,97 @@
+{
+  // ─── Editor ────────────────────────────────────────────
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.accessibilitySupport": "off",
+  "editor.codeActionsOnSave": { "source.fixAll.biome": "explicit" },
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.fontFamily": "'JetBrainsMono Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 15,
+  "editor.formatOnSave": true,
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.lineHeight": 1.8,
+  "editor.minimap.enabled": false,
+  "editor.parameterHints.enabled": false,
+  "editor.renderLineHighlight": "gutter",
+  "editor.rulers": [80, 120],
+  "editor.semanticHighlighting.enabled": false,
+  "editor.stickyScroll.enabled": false,
+
+  // ─── Explorer & Files ─────────────────────────────────
+  "breadcrumbs.enabled": false,
+  "explorer.compactFolders": false,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.fileNesting.enabled": false,
+  "files.insertFinalNewline": true,
+  "files.associations": {
+      ".env.*": "dotenv"
+  },
+  "files.exclude": {
+      "**/.DS_Store": true,
+      "**/.git": true,
+      "**/.hg": true,
+      "**/.svn": true,
+      "**/CVS": true,
+      "node_modules": true
+  },
+
+  // ─── Terminal ─────────────────────────────────────────
+{% if is_macos %}
+  "terminal.integrated.defaultProfile.osx": "zsh",
+{% else %}
+  "terminal.integrated.defaultProfile.linux": "zsh",
+{% endif %}
+  "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font Mono",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontWeight": "bold",
+  "terminal.integrated.gpuAcceleration": "off",
+  "terminal.integrated.showExitAlert": false,
+
+  // ─── Workbench & Window ───────────────────────────────
+  "debug.toolBarLocation": "commandCenter",
+  "update.mode": "start",
+  "update.showReleaseNotes": false,
+  "window.commandCenter": true,
+  "window.titleBarStyle": "custom",
+  "workbench.colorTheme": "GitHub Dark",
+  "workbench.editor.labelFormat": "short",
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.productIconTheme": "fluent-icons",
+  "workbench.sideBar.location": "right",
+  "workbench.tree.enableStickyScroll": false,
+  "workbench.tree.indent": 12,
+  "workbench.tree.renderIndentGuides": "none",
+
+  // ─── Git ──────────────────────────────────────────────
+  "git.enableSmartCommit": true,
+  "git.openRepositoryInParentFolders": "always",
+  "gitlens.codeLens.authors.enabled": false,
+  "gitlens.codeLens.recentChange.enabled": false,
+
+  // ─── Security ─────────────────────────────────────────
+  "security.promptForLocalFileProtocolHandling": false,
+  "security.workspace.trust.untrustedFiles": "newWindow",
+  "extensions.ignoreRecommendations": true,
+
+  // ─── Emmet ────────────────────────────────────────────
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.useInlineCompletions": true,
+
+  // ─── TypeScript ───────────────────────────────────────
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.tsserver.log": "off",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // ─── Language Overrides ───────────────────────────────
+  "[prisma]": { "editor.formatOnSave": true },
+  "[css]": { "editor.defaultFormatter": "vscode.css-language-features" },
+
+  // ─── Extensions ───────────────────────────────────────
+  "chat.agent.enabled": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "github.copilot.chat.codesearch.enabled": true,
+  "githubPullRequests.pullBranch": "never",
+  "material-icon-theme.activeIconPack": "none",
+  "material-icon-theme.folders.theme": "classic"
+}

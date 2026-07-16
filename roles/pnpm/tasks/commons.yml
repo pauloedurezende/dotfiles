@@ -1,0 +1,35 @@
+---
+- name: Manage pnpm via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: pnpm
+      url: "{{ pnpm_plugin_url }}"
+      versions: "{{ pnpm_versions }}"
+      global: "{{ pnpm_versions[0] }}"
+
+- name: Generate pnpm configuration
+  ansible.builtin.template:
+    src: pnpmrc.j2
+    dest: "{{ dotfiles_home }}/.pnpmrc"
+    mode: '0644'
+    backup: true
+  when: pnpm_config_enabled
+
+- name: Ensure pnpm global bin directory exists
+  ansible.builtin.file:
+    path: "{{ pnpm_global_bin_dir }}"
+    state: directory
+    mode: '0755'
+  when: pnpm_config_enabled
+
+- name: Add pnpm global bin to PATH in shell profile
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.zprofile"
+    regexp: '^export PATH=".*\.local/share/pnpm/bin.*:\$PATH"$'
+    line: 'export PATH="{{ pnpm_global_bin_dir }}:$PATH"'
+    create: true
+    mode: '0644'
+  when: pnpm_config_enabled

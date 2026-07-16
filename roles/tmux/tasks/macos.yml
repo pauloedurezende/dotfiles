@@ -1,0 +1,9 @@
+---
+- name: Install tmux build dependencies on macOS
+  community.general.homebrew:
+    name:
+      - libevent
+      - ncurses
+      - pkg-config
+      - utf8proc
+    state: present

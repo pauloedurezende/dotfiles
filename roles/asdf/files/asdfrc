@@ -1,0 +1,14 @@
+# asdf configuration file
+# https://asdf-vm.com/manage/configuration.html
+
+# Enable legacy version files (.nvmrc, .node-version, etc.)
+legacy_version_file = yes
+
+# Always keep downloaded files
+always_keep_download = no
+
+# Use release-candidate plugins
+plugin_repository_last_check_duration = never
+
+# Disable reshimming on plugin add/remove
+disable_plugin_short_name_repository = no

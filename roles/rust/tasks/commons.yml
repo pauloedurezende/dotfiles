@@ -1,0 +1,11 @@
+---
+- name: Manage Rust via asdf
+  ansible.builtin.include_role:
+    name: asdf
+    tasks_from: plugin.yml
+  vars:
+    plugin:  # noqa: var-naming[no-role-prefix]
+      name: rust
+      url: "{{ rust_plugin_url }}"
+      versions: "{{ rust_versions }}"
+      global: "{{ rust_versions[0] }}"

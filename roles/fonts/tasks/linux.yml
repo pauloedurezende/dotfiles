@@ -1,0 +1,73 @@
+---
+- name: Ensure fontconfig is installed
+  ansible.builtin.package:
+    name: fontconfig
+    state: present
+  become: true
+
+- name: Create cache directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.cache"
+    state: directory
+    mode: '0755'
+  when: fonts_jetbrains_mono_nerd_enabled
+
+- name: Create user fonts directory
+  ansible.builtin.file:
+    path: "{{ fonts_linux_user_fonts_dir }}"
+    state: directory
+    mode: '0755'
+  when: fonts_jetbrains_mono_nerd_enabled
+
+- name: Download JetBrains Mono Nerd Font
+  ansible.builtin.get_url:
+    url: "{{ fonts_jetbrains_mono_nerd_download_url }}"
+    dest: "{{ dotfiles_home }}/.cache/JetBrainsMono.zip"
+    mode: '0644'
+    timeout: 30
+    force: true
+  when: fonts_jetbrains_mono_nerd_enabled
+
+- name: Extract JetBrains Mono Nerd Font to cache
+  ansible.builtin.shell: |
+    cd "{{ dotfiles_home }}/.cache"
+    unzip -o "JetBrainsMono.zip"
+  when: fonts_jetbrains_mono_nerd_enabled
+  changed_when: true
+
+- name: Copy TTF files to fonts directory
+  ansible.builtin.shell: |
+    find "{{ dotfiles_home }}/.cache" -name "*.ttf" \
+      -exec cp {} "{{ fonts_linux_user_fonts_dir }}/" \;
+  when: fonts_jetbrains_mono_nerd_enabled
+  changed_when: true
+
+- name: Clean up downloaded font files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ dotfiles_home }}/.cache/JetBrainsMono.zip"
+    - "{{ dotfiles_home }}/.cache/LICENSE"
+    - "{{ dotfiles_home }}/.cache/README.md"
+  when: fonts_jetbrains_mono_nerd_enabled
+
+- name: Clean up extracted TTF files from cache
+  ansible.builtin.shell: |
+    find "{{ dotfiles_home }}/.cache" -name "*.ttf" -delete
+  when: fonts_jetbrains_mono_nerd_enabled
+  changed_when: true
+
+- name: Refresh font cache
+  ansible.builtin.command: fc-cache -fv
+  when:
+    - fonts_refresh_cache
+    - fonts_jetbrains_mono_nerd_enabled
+  changed_when: true
+
+- name: Verify JetBrains Mono Nerd Font installation
+  ansible.builtin.command: fc-list | grep -i "JetBrainsMono Nerd Font"
+  register: fonts_verify
+  changed_when: false
+  failed_when: fonts_verify.rc != 0
+  when: fonts_jetbrains_mono_nerd_enabled

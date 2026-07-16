@@ -1,0 +1,29 @@
+---
+opencode_enabled: true
+opencode_rtk_enabled: true
+opencode_codegraph_enabled: true
+
+opencode_config_dir: "{{ dotfiles_home }}/.config/opencode"
+
+opencode_macos_tool_path: >-
+  {{
+    [
+      asdf_binary_install_path,
+      asdf_dir ~ '/shims',
+      nodejs_npm_global_prefix ~ '/bin',
+      homebrew_bin_path,
+      ansible_facts['env']['PATH']
+    ] | join(':')
+  }}
+
+opencode_linux_install_dir: "{{ dotfiles_home }}/.opencode/bin"
+opencode_linux_tool_path: >-
+  {{
+    [
+      opencode_linux_install_dir,
+      asdf_binary_install_path,
+      asdf_dir ~ '/shims',
+      nodejs_npm_global_prefix ~ '/bin',
+      ansible_facts['env']['PATH']
+    ] | join(':')
+  }}

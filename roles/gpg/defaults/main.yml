@@ -1,0 +1,4 @@
+---
+gpg_config_dir: "{{ dotfiles_home }}/.gnupg"
+gpg_import_key: true
+gpg_key_trust_level: "ultimate"
