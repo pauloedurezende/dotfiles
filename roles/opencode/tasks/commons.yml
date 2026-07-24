@@ -19,6 +19,14 @@
     mode: '0644'
     backup: true
 
+- name: Copy OpenCode notifier configuration
+  ansible.builtin.copy:
+    src: opencode-notifier.json
+    dest: "{{ opencode_config_dir }}/opencode-notifier.json"
+    mode: '0644'
+    backup: true
+  when: is_macos
+
 - name: Install CodeGraph globally via npm
   community.general.npm:
     name: "@colbymchenry/codegraph"

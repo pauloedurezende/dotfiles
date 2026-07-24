@@ -6,13 +6,13 @@
   "small_model": "openai/gpt-5.6-luna",
 
   // ── Plugins ──────────────────────────────────────────
-  // Pin the version to keep the workflow reproducible.
   "plugin": [
-    "superpowers@git+https://github.com/obra/superpowers.git#v5.0.6"
+    "superpowers@git+https://github.com/obra/superpowers.git#v5.0.6",
+    "@mohak34/opencode-notifier@0.2.8"
   ],
 
   // ── Global behavior ──────────────────────────────────
-  // If installed through Homebrew, set this to false and update with brew.
+  // OpenCode is installed through Homebrew, so only notify about updates.
   "autoupdate": "notify",
   "logLevel": "INFO",
   "share": "manual",
@@ -20,146 +20,98 @@
 
   // ── Output and context ───────────────────────────────
   "tool_output": {
-    "max_bytes": 32768,
-    "max_lines": 1000
+    "max_bytes": 51200,
+    "max_lines": 2000
   },
-
   "compaction": {
     "auto": true,
     "prune": true,
-    "tail_turns": 6,
-    "preserve_recent_tokens": 60000,
-    "reserved": 20000
+    "tail_turns": 15
   },
 
-  // ── File watcher ─────────────────────────────────────
-  "watcher": {
-    "ignore": [
-      ".git/**",
-      "node_modules/**",
-      "dist/**",
-      "build/**",
-      "coverage/**",
-      ".next/**",
-      ".turbo/**"
-    ]
+  // Superpowers owns orchestration. This only prevents a delegated worker from
+  // recursively delegating again and leaving its parent waiting indefinitely.
+  "agent": {
+    "general": {
+      "permission": {
+        "task": "deny"
+      }
+    }
   },
 
-  // ── Global permissions ───────────────────────────────
+  // OpenCode is permissive by default. Only exceptions belong here.
   "permission": {
-    // Require approval for any new or unspecified tool.
-    "*": "ask",
-
     "read": {
-      "*": "allow",
-
-      // Environment files may contain credentials.
       "*.env": "deny",
       "*.env.*": "deny",
-
-      // Sanitized environment templates are safe to read.
       "*.env.example": "allow",
-      "*.env.sample": "allow",
-      "*.env.template": "allow",
-
-      // Sensitive directories.
       "secrets/**": "deny",
       "**/secrets/**": "deny",
-
-      ".aws/**": "deny",
-      "**/.aws/**": "deny",
-
+      ".aws/credentials": "deny",
+      "**/.aws/credentials": "deny",
       ".ssh/**": "deny",
       "**/.ssh/**": "deny",
-
-      ".gnupg/**": "deny",
-      "**/.gnupg/**": "deny",
-
-      // Common credential files.
-      "*.npmrc": "deny",
-      "*.pypirc": "deny",
-      "*.netrc": "deny",
-
-      // These files may be legitimate project assets.
-      "*.pem": "ask",
-      "*.key": "ask"
-    },
-
-    "edit": {
-      "*": "allow",
-
-      "*.env": "deny",
-      "*.env.*": "deny",
-
-      "secrets/**": "deny",
-      "**/secrets/**": "deny",
-
-      ".aws/**": "deny",
-      "**/.aws/**": "deny",
-
-      ".ssh/**": "deny",
-      "**/.ssh/**": "deny",
-
-      ".gnupg/**": "deny",
-      "**/.gnupg/**": "deny",
-
-      // Prevent direct modification of Git metadata.
-      ".git/**": "deny",
-      "**/.git/**": "deny",
-
       "*.npmrc": "deny",
       "*.pypirc": "deny",
       "*.netrc": "deny"
     },
-
-    // Glob and grep permissions match their search expressions,
-    // not the filesystem paths they eventually inspect.
-    "glob": "allow",
-    "grep": "allow",
-    "list": "allow",
-
-    "question": "allow",
-    "todowrite": "allow",
-    "lsp": "allow",
-
-    // Allow Superpowers to load skills and delegate tasks.
-    "skill": "allow",
-    "task": "allow",
-
-    "websearch": "allow",
-    "webfetch": "allow",
-
-    // Allow native Plan/Build transitions as a fallback.
-    "plan_enter": "allow",
-    "plan_exit": "allow",
-
-    // Require approval for filesystem access outside the project.
-    "external_directory": "ask",
-    "doom_loop": "ask",
-
+    "edit": {
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "secrets/**": "deny",
+      "**/secrets/**": "deny",
+      ".aws/credentials": "deny",
+      "**/.aws/credentials": "deny",
+      ".ssh/**": "deny",
+      "**/.ssh/**": "deny",
+      ".git/**": "deny",
+      "**/.git/**": "deny",
+      "*.npmrc": "deny",
+      "*.pypirc": "deny",
+      "*.netrc": "deny"
+    },
     "bash": {
-      // Require approval for commands not explicitly allowed below.
-      "*": "ask",
+      // Bash can bypass read/edit rules, so block direct access to secrets too.
+      "*.env*": "deny",
+      "*secrets/*": "deny",
+      "*.aws/credentials*": "deny",
+      "*.ssh/*": "deny",
+      "*.npmrc*": "deny",
+      "*.pypirc*": "deny",
+      "*.netrc*": "deny",
 
-      // Frequently used low-risk commands.
-      "pwd": "allow",
-      "ls": "allow",
-      "ls *": "allow",
-      "git status*": "allow",
-      "git diff*": "allow",
-      "git log*": "allow",
-      "git show*": "allow",
-      "git rev-parse*": "allow",
-      "git ls-files*": "allow",
-      "git branch --show-current*": "allow",
-
-      // Explicit denials remain active when auto-approval is enabled.
-      "sudo *": "deny",
-      "rm -rf /*": "deny",
-      "rm -rf ~*": "deny",
+      // Ask only before external side effects; deny destructive operations.
+      "git push*": "ask",
+      "git reset --hard*": "deny",
+      "git clean -*f*": "deny",
+      "git checkout -- *": "deny",
+      "git restore*": "deny",
       "git push -f*": "deny",
-      "git push --force*": "deny"
-    }
+      "git push --force*": "deny",
+      "sudo *": "deny",
+      "rm -rf *": "deny",
+      "rm -fr *": "deny",
+
+      // RTK rewrites commands before OpenCode evaluates permissions.
+      "rtk git push*": "ask",
+      "rtk git reset --hard*": "deny",
+      "rtk git clean -*f*": "deny",
+      "rtk git checkout -- *": "deny",
+      "rtk git restore*": "deny",
+      "rtk git push -f*": "deny",
+      "rtk git push --force*": "deny",
+      "rtk proxy sudo *": "deny",
+      "rtk proxy rm -rf *": "deny",
+      "rtk proxy rm -fr *": "deny"
+    },
+    "external_directory": {
+      "*": "ask",
+      // OpenCode's macOS scratch directory varies between user temp roots.
+      "/var/folders/**/T/opencode": "allow",
+      "/var/folders/**/T/opencode/**": "allow",
+      "~/.config/superpowers/worktrees/**": "allow"
+    },
+    "doom_loop": "deny"
   },
 
   // ── Language Server Protocol ─────────────────────────
@@ -173,10 +125,8 @@
       "enabled": true,
       "headers": {
         "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
-      },
-      "timeout": 10000
+      }
     },
-
     "codegraph": {
       "type": "local",
       "command": [
@@ -184,8 +134,7 @@
         "serve",
         "--mcp"
       ],
-      "enabled": true,
-      "timeout": 30000
+      "enabled": true
     }
   }
 }

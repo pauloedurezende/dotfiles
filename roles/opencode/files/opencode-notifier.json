@@ -1,0 +1,16 @@
+{
+  "notificationSystem": "ghostty",
+  "suppressGhosttySound": false,
+  "sounds": {
+    "complete": "/System/Library/Sounds/Glass.aiff",
+    "permission": "/System/Library/Sounds/Ping.aiff",
+    "error": "/System/Library/Sounds/Basso.aiff",
+    "question": "/System/Library/Sounds/Purr.aiff"
+  },
+  "volumes": {
+    "complete": 0.5,
+    "permission": 0.7,
+    "error": 1,
+    "question": 0.7
+  }
+}
