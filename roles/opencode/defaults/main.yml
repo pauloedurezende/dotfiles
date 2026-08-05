@@ -2,8 +2,11 @@
 opencode_enabled: true
 opencode_rtk_enabled: true
 opencode_codegraph_enabled: true
+opencode_background_subagents_enabled: true
+opencode_builtin_websearch_enabled: true
 
 opencode_config_dir: "{{ dotfiles_home }}/.config/opencode"
+opencode_shell_profile: "{{ dotfiles_home }}/.zshrc"
 
 opencode_macos_tool_path: >-
   {{

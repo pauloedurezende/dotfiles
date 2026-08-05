@@ -12,6 +12,13 @@
     mode: '0644'
     backup: true
 
+- name: Copy oh-my-opencode-slim configuration
+  ansible.builtin.copy:
+    src: oh-my-opencode-slim.jsonc
+    dest: "{{ opencode_config_dir }}/oh-my-opencode-slim.jsonc"
+    mode: '0644'
+    backup: true
+
 - name: Copy OpenCode global instructions
   ansible.builtin.copy:
     src: AGENTS.md
@@ -26,6 +33,29 @@
     mode: '0644'
     backup: true
   when: is_macos
+
+- name: Configure OpenCode background subagents in shell profile
+  ansible.builtin.blockinfile:
+    path: "{{ opencode_shell_profile }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: OpenCode background subagents"
+    block: |
+      export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
+    create: true
+    mode: '0644'
+    state: >-
+      {{ opencode_background_subagents_enabled | ternary('present', 'absent') }}
+
+- name: Configure OpenCode native websearch in shell profile
+  ansible.builtin.blockinfile:
+    path: "{{ opencode_shell_profile }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: OpenCode native websearch"
+    block: |
+      export OPENCODE_ENABLE_EXA=true
+      export OPENCODE_ENABLE_PARALLEL=true
+    create: true
+    mode: '0644'
+    state: >-
+      {{ opencode_builtin_websearch_enabled | ternary('present', 'absent') }}
 
 - name: Install CodeGraph globally via npm
   community.general.npm:
