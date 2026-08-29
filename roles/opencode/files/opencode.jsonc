@@ -130,7 +130,13 @@
     "figma": {
       "type": "remote",
       "url": "http://127.0.0.1:3845/mcp",
-      "timeout": 120000
+      "timeout": 120000,
+      "oauth": false
+    },
+    "untitledui": {
+      "type": "remote",
+      "url": "https://www.untitledui.com/react/api/mcp",
+      "enabled": true
     }
   }
 }
