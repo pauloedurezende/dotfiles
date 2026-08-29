@@ -44,7 +44,6 @@
   run_once: true
   when: >-
     opencode_rtk_enabled and
-    opencode_rtk_version_check.rc != 0 and
     not ansible_check_mode
 
 - name: Extract latest RTK version
@@ -53,8 +52,17 @@
       {{ opencode_rtk_release.json.tag_name | regex_replace('^v', '') }}
   when: >-
     opencode_rtk_enabled and
-    opencode_rtk_version_check.rc != 0 and
     not ansible_check_mode
+
+- name: Determine whether RTK update is required
+  ansible.builtin.set_fact:
+    opencode_rtk_update_required: >-
+      {{ (opencode_rtk_version_check.rc | default(1)) != 0 or
+         (not ansible_check_mode and
+          (opencode_rtk_version_check.stdout |
+           regex_search('[0-9]+\.[0-9]+\.[0-9]+')) !=
+          opencode_rtk_latest_version) }}
+  when: opencode_rtk_enabled
 
 - name: Check architecture for RTK
   ansible.builtin.set_fact:
@@ -62,14 +70,14 @@
       {{ 'x86_64-unknown-linux-musl'
          if ansible_facts['architecture'] == 'x86_64'
          else 'aarch64-unknown-linux-gnu' }}
-  when: opencode_rtk_enabled and opencode_rtk_version_check.rc != 0
+  when: opencode_rtk_enabled and opencode_rtk_update_required
 
 - name: Create cache directory for RTK downloads
   ansible.builtin.file:
     path: "{{ dotfiles_home }}/.cache"
     state: directory
     mode: '0755'
-  when: opencode_rtk_enabled and opencode_rtk_version_check.rc != 0
+  when: opencode_rtk_enabled and opencode_rtk_update_required
 
 - name: Download RTK binary for Linux
   ansible.builtin.get_url:
@@ -80,7 +88,7 @@
     mode: '0644'
   when: >-
     opencode_rtk_enabled and
-    opencode_rtk_version_check.rc != 0 and
+    opencode_rtk_update_required and
     not ansible_check_mode
 
 - name: Extract and install RTK binary
@@ -93,7 +101,7 @@
   become: true
   when: >-
     opencode_rtk_enabled and
-    opencode_rtk_version_check.rc != 0 and
+    opencode_rtk_update_required and
     not ansible_check_mode
 
 - name: Clean up RTK downloaded archive
@@ -102,5 +110,5 @@
     state: absent
   when: >-
     opencode_rtk_enabled and
-    opencode_rtk_version_check.rc != 0 and
+    opencode_rtk_update_required and
     not ansible_check_mode

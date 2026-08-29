@@ -77,7 +77,7 @@
   community.general.npm:
     name: "@colbymchenry/codegraph"
     global: true
-    state: present
+    state: latest
     executable: "{{ asdf_dir }}/shims/npm"
   environment:
     ASDF_DATA_DIR: "{{ asdf_dir }}"

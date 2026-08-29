@@ -8,10 +8,10 @@
 - name: Install OpenCode via Homebrew
   community.general.homebrew:
     name: opencode
-    state: present
+    state: latest
 
 - name: Install RTK via Homebrew
   community.general.homebrew:
     name: rtk
-    state: present
+    state: latest
   when: opencode_rtk_enabled
