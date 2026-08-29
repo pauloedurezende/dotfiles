@@ -5,6 +5,12 @@
     state: directory
     mode: '0755'
 
+- name: Create OpenCode agent directory
+  ansible.builtin.file:
+    path: "{{ opencode_config_dir }}/agent"
+    state: directory
+    mode: '0755'
+
 - name: Copy OpenCode configuration
   ansible.builtin.copy:
     src: opencode.jsonc
@@ -12,17 +18,27 @@
     mode: '0644'
     backup: true
 
+- name: Copy OpenCode agents
+  ansible.builtin.copy:
+    src: "agent/{{ item }}.md"
+    dest: "{{ opencode_config_dir }}/agent/{{ item }}.md"
+    mode: '0644'
+    backup: true
+  loop:
+    - codegraph
+    - rtk
+    - figma
+    - untitledui
+
+- name: Remove deployed OpenCode global instructions
+  ansible.builtin.file:
+    path: "{{ opencode_config_dir }}/AGENTS.md"
+    state: absent
+
 - name: Copy oh-my-opencode-slim configuration
   ansible.builtin.copy:
     src: oh-my-opencode-slim.jsonc
     dest: "{{ opencode_config_dir }}/oh-my-opencode-slim.jsonc"
-    mode: '0644'
-    backup: true
-
-- name: Copy OpenCode global instructions
-  ansible.builtin.copy:
-    src: AGENTS.md
-    dest: "{{ opencode_config_dir }}/AGENTS.md"
     mode: '0644'
     backup: true
 
