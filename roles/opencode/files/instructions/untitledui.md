@@ -1,8 +1,3 @@
----
-description: Implements and reviews Untitled UI React components following official conventions.
-mode: primary
----
-
 <!-- @embed:start file="public-components/CLAUDE.md" -->
 ## Project Overview
 

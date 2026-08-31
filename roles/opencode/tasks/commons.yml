@@ -5,9 +5,9 @@
     state: directory
     mode: '0755'
 
-- name: Create OpenCode agent directory
+- name: Create OpenCode instructions directory
   ansible.builtin.file:
-    path: "{{ opencode_config_dir }}/agent"
+    path: "{{ opencode_config_dir }}/instructions"
     state: directory
     mode: '0755'
 
@@ -18,12 +18,22 @@
     mode: '0644'
     backup: true
 
-- name: Copy OpenCode agents
+- name: Copy OpenCode instructions
   ansible.builtin.copy:
-    src: "agent/{{ item }}.md"
-    dest: "{{ opencode_config_dir }}/agent/{{ item }}.md"
+    src: "instructions/{{ item }}.md"
+    dest: "{{ opencode_config_dir }}/instructions/{{ item }}.md"
     mode: '0644'
     backup: true
+  loop:
+    - codegraph
+    - rtk
+    - figma
+    - untitledui
+
+- name: Remove legacy OpenCode agents
+  ansible.builtin.file:
+    path: "{{ opencode_config_dir }}/agent/{{ item }}.md"
+    state: absent
   loop:
     - codegraph
     - rtk

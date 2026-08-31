@@ -1,8 +1,3 @@
----
-description: Provides CodeGraph guidance for locating and understanding code.
-mode: primary
----
-
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 

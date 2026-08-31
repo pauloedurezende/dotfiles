@@ -1,8 +1,3 @@
----
-description: Provides guidance for using the Figma MCP Desktop integration.
-mode: primary
----
-
 ## Figma MCP Desktop
 
 - Make expensive Figma calls serially; never run them in parallel.

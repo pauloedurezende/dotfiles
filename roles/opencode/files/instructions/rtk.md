@@ -1,8 +1,3 @@
----
-description: Provides RTK guidance for efficient shell output.
-mode: primary
----
-
 <!-- RTK_START -->
 ## RTK
 
