@@ -1,0 +1,109 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "{{ opencode_default_model }}",
+  "default_agent": "orchestrator",
+
+  "update": "notify",
+  // Pinned for reproducible plugin behavior.
+  "plugins": ["oh-my-opencode-slim@{{ opencode_slim_version }}"],
+
+  "snapshots": true,
+  "formatter": true,
+
+  // Limit each tool result's context cost.
+  "tool_output": {
+    "max_bytes": 32768,
+    "max_lines": 1000
+  },
+  // Summarize older context in long sessions.
+  "compaction": {
+    "auto": true,
+    "keep": { "tokens": 15000 },
+    "buffer": 20000
+  },
+
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      ".next/**",
+      ".turbo/**"
+    ]
+  },
+
+  // Last matching permission rule wins.
+  "permissions": [
+    // Credentials are denied; safe .env templates are allowed below.
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
+    { "action": "read", "resource": "*.env.sample", "effect": "allow" },
+    { "action": "read", "resource": "*.env.template", "effect": "allow" },
+    { "action": "read", "resource": "secrets/*", "effect": "deny" },
+    { "action": "read", "resource": "*/secrets/*", "effect": "deny" },
+    { "action": "read", "resource": ".aws/*", "effect": "deny" },
+    { "action": "read", "resource": "*/.aws/*", "effect": "deny" },
+    { "action": "read", "resource": ".ssh/*", "effect": "deny" },
+    { "action": "read", "resource": "*/.ssh/*", "effect": "deny" },
+    { "action": "read", "resource": ".gnupg/*", "effect": "deny" },
+    { "action": "read", "resource": "*/.gnupg/*", "effect": "deny" },
+    { "action": "read", "resource": "*.npmrc", "effect": "deny" },
+    { "action": "read", "resource": "*.pypirc", "effect": "deny" },
+    { "action": "read", "resource": "*.netrc", "effect": "deny" },
+    { "action": "read", "resource": "*.pem", "effect": "ask" },
+    { "action": "read", "resource": "*.key", "effect": "ask" },
+
+    // Protect credentials and Git internals from edits.
+    { "action": "edit", "resource": "*.env", "effect": "deny" },
+    { "action": "edit", "resource": "*.env.*", "effect": "deny" },
+    { "action": "edit", "resource": "secrets/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/secrets/*", "effect": "deny" },
+    { "action": "edit", "resource": ".aws/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/.aws/*", "effect": "deny" },
+    { "action": "edit", "resource": ".ssh/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/.ssh/*", "effect": "deny" },
+    { "action": "edit", "resource": ".gnupg/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/.gnupg/*", "effect": "deny" },
+    { "action": "edit", "resource": ".git/*", "effect": "deny" },
+    { "action": "edit", "resource": "*/.git/*", "effect": "deny" },
+    { "action": "edit", "resource": "*.npmrc", "effect": "deny" },
+    { "action": "edit", "resource": "*.pypirc", "effect": "deny" },
+    { "action": "edit", "resource": "*.netrc", "effect": "deny" },
+
+    // Ask by default; allow inspection and deny dangerous commands.
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "pwd", "effect": "allow" },
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
+    { "action": "shell", "resource": "git status *", "effect": "allow" },
+    { "action": "shell", "resource": "git diff *", "effect": "allow" },
+    { "action": "shell", "resource": "git log *", "effect": "allow" },
+    { "action": "shell", "resource": "git show *", "effect": "allow" },
+    { "action": "shell", "resource": "git rev-parse *", "effect": "allow" },
+    { "action": "shell", "resource": "git ls-files *", "effect": "allow" },
+    { "action": "shell", "resource": "git branch --show-current *", "effect": "allow" },
+    { "action": "shell", "resource": "sudo *", "effect": "deny" },
+    { "action": "shell", "resource": "rm -rf /*", "effect": "deny" },
+    { "action": "shell", "resource": "rm -rf ~*", "effect": "deny" },
+    { "action": "shell", "resource": "git push -f *", "effect": "deny" },
+    { "action": "shell", "resource": "git push --force *", "effect": "deny" }
+  ],
+
+  "mcp": {
+    "servers": {
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp"
+      },
+      "codegraph": {
+        "type": "local",
+        "command": ["codegraph", "serve", "--mcp"],
+        "codemode": false,
+        "timeout": { "startup": 30000, "catalog": 30000 }
+      }
+    }
+  }
+}

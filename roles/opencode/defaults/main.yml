@@ -1,7 +1,11 @@
 ---
 opencode_enabled: true
 opencode_rtk_enabled: true
-opencode_codegraph_enabled: true
+
+# Keep the plugin pinned: OpenCode v2 refreshes unpinned npm plugins at startup.
+opencode_slim_version: 2.2.17
+opencode_default_model: openai/gpt-5.6-terra
+opencode_small_model: openai/gpt-5.6-luna
 
 opencode_config_dir: "{{ dotfiles_home }}/.config/opencode"
 

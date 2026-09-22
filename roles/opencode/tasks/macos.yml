@@ -7,7 +7,7 @@
 
 - name: Install OpenCode via Homebrew
   community.general.homebrew:
-    name: opencode
+    name: anomalyco/tap/opencode-v2
     state: present
 
 - name: Install RTK via Homebrew

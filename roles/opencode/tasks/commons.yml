@@ -5,10 +5,24 @@
     state: directory
     mode: '0755'
 
-- name: Copy OpenCode configuration
-  ansible.builtin.copy:
-    src: opencode.jsonc
+- name: Generate OpenCode v2 configuration
+  ansible.builtin.template:
+    src: opencode.jsonc.j2
     dest: "{{ opencode_config_dir }}/opencode.jsonc"
+    mode: '0644'
+    backup: true
+
+- name: Generate oh-my-opencode-slim configuration
+  ansible.builtin.template:
+    src: oh-my-opencode-slim.jsonc.j2
+    dest: "{{ opencode_config_dir }}/oh-my-opencode-slim.jsonc"
+    mode: '0644'
+    backup: true
+
+- name: Generate OpenCode CLI configuration
+  ansible.builtin.template:
+    src: cli.json.j2
+    dest: "{{ opencode_config_dir }}/cli.json"
     mode: '0644'
     backup: true
 
@@ -18,6 +32,16 @@
     dest: "{{ opencode_config_dir }}/AGENTS.md"
     mode: '0644'
     backup: true
+
+- name: Verify OpenCode installation
+  ansible.builtin.command: opencode --version
+  register: opencode_version_check
+  changed_when: false
+  environment:
+    PATH: >-
+      {{ opencode_macos_tool_path
+         if is_macos
+         else opencode_linux_tool_path }}
 
 - name: Install CodeGraph globally via npm
   community.general.npm:
@@ -31,7 +55,7 @@
       {{ opencode_macos_tool_path
          if is_macos
          else opencode_linux_tool_path }}
-  when: opencode_codegraph_enabled and not ansible_check_mode
+  when: not ansible_check_mode
 
 - name: Verify CodeGraph installation
   ansible.builtin.command: codegraph --version
@@ -42,15 +66,3 @@
       {{ opencode_macos_tool_path
          if is_macos
          else opencode_linux_tool_path }}
-  when: opencode_codegraph_enabled
-
-- name: Initialize RTK for OpenCode
-  ansible.builtin.command: rtk init -g --opencode
-  register: opencode_rtk_init_result
-  changed_when: "'already up to date' not in opencode_rtk_init_result.stdout"
-  environment:
-    PATH: >-
-      {{ opencode_macos_tool_path
-         if is_macos
-         else opencode_linux_tool_path }}
-  when: opencode_rtk_enabled

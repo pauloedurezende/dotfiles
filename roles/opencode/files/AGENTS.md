@@ -12,7 +12,7 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 <!-- RTK_START -->
 ## RTK
 
-RTK (Rust Token Killer) reduces the shell output sent to the model. The OpenCode plugin automatically rewrites supported Bash and shell commands, so use normal command syntax and let the plugin apply RTK filtering.
+RTK (Rust Token Killer) reduces the shell output sent to the model. Use it explicitly when its filtered output is sufficient.
 
 - Keep CodeGraph and purpose-built file, search, and read tools as the first choice; do not replace them with shell commands merely to use RTK.
 - When invoking RTK explicitly, prefix the command with `rtk`, for example: `rtk git status`, `rtk npm test`, `rtk pytest`, or `rtk cargo test`.

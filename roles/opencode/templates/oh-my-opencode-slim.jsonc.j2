@@ -1,0 +1,55 @@
+{
+  "$schema": "https://unpkg.com/oh-my-opencode-slim@{{ opencode_slim_version }}/oh-my-opencode-slim.schema.json",
+
+  // OpenCode v2 renders subagents natively; terminal multiplexers stay disabled.
+  "preset": "openai",
+  "autoUpdate": false,
+  "multiplexer": { "type": "none" },
+
+  "presets": {
+    "openai": {
+      "orchestrator": {
+        "model": "{{ opencode_default_model }}",
+        "variant": "high",
+        "skills": ["*"],
+        "mcps": ["*", "!context7"]
+      },
+      "council": {
+        "model": "openai/gpt-5.6-sol",
+        "variant": "high",
+        "skills": [],
+        "mcps": []
+      },
+      "oracle": {
+        "model": "openai/gpt-5.6-sol",
+        "variant": "high",
+        "skills": ["simplify"],
+        "mcps": []
+      },
+      "librarian": {
+        "model": "{{ opencode_small_model }}",
+        "variant": "low",
+        "skills": [],
+        "mcps": ["context7", "gh_grep"]
+      },
+      "explorer": {
+        "model": "{{ opencode_small_model }}",
+        "variant": "low",
+        "skills": [],
+        "mcps": []
+      },
+      "designer": {
+        "model": "{{ opencode_small_model }}",
+        "variant": "medium",
+        "skills": [],
+        "mcps": []
+      },
+      "fixer": {
+        "model": "{{ opencode_small_model }}",
+        "variant": "high",
+        "skills": [],
+        "mcps": []
+      }
+    }
+  }
+}

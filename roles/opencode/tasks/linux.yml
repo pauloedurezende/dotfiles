@@ -7,24 +7,24 @@
     create: true
     mode: '0644'
 
-- name: Install OpenCode via official installer
+- name: Check managed OpenCode binary
+  ansible.builtin.stat:
+    path: "{{ opencode_linux_install_dir }}/opencode"
+  register: opencode_v2_binary
+
+- name: Install OpenCode v2 via official installer
   ansible.builtin.shell: |
     set -o pipefail
-    curl -fsSL https://opencode.ai/install | bash
+    curl -fsSL https://opencode.ai/v2/install | bash -s -- --no-modify-path
   args:
     executable: /bin/bash
-  register: opencode_install_result
-  changed_when: "'already installed' not in opencode_install_result.stdout"
+  changed_when: true
   environment:
     HOME: "{{ dotfiles_home }}"
     PATH: "{{ opencode_linux_tool_path }}"
-
-- name: Verify OpenCode installation
-  ansible.builtin.command: opencode --version
-  register: opencode_version_check
-  changed_when: false
-  environment:
-    PATH: "{{ opencode_linux_tool_path }}"
+  when:
+    - not opencode_v2_binary.stat.exists
+    - not ansible_check_mode
 
 - name: Check RTK installation
   ansible.builtin.command: rtk --version
