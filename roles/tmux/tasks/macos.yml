@@ -6,4 +6,5 @@
       - ncurses
       - pkg-config
       - utf8proc
+      - jemalloc
     state: present
