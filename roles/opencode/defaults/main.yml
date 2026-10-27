@@ -2,8 +2,8 @@
 opencode_enabled: true
 opencode_rtk_enabled: true
 
-opencode_slim_version: 2.2.24
-opencode_default_model: openai/gpt-6-sol
+opencode_slim_version: 3.0.6
+opencode_default_model: openai/gpt-6.1-sol
 opencode_reasoning_model: openai/gpt-6-astra
 opencode_small_model: openai/gpt-6-luna
 

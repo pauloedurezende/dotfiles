@@ -1,4 +1,12 @@
 ---
+- name: Enable OpenCode experimental background subagents
+  ansible.builtin.lineinfile:
+    path: "{{ dotfiles_home }}/.zprofile"
+    line: 'export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true'
+    regexp: '^export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS='
+    create: true
+    mode: '0644'
+
 - name: Create OpenCode configuration directory
   ansible.builtin.file:
     path: "{{ opencode_config_dir }}"
