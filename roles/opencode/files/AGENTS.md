@@ -15,9 +15,9 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 RTK (Rust Token Killer) reduces the shell output sent to the model. Use it explicitly when its filtered output is sufficient.
 
 - Keep CodeGraph and purpose-built file, search, and read tools as the first choice; do not replace them with shell commands merely to use RTK.
-- When invoking RTK explicitly, prefix the command with `rtk`, for example: `rtk git status`, `rtk npm test`, `rtk pytest`, or `rtk cargo test`.
-- Use `rtk proxy <command>` only when exact, unfiltered output is required for debugging.
+- When invoking RTK explicitly, prefix the command with `rtk`, for example: `rtk git status`, `rtk npm run test`, `rtk pytest`, or `rtk cargo test`.
+- Use `rtk bypass <command>` only when exact, unfiltered output is required for debugging.
 - If a failed command reports a saved full-output path, inspect that output before rerunning the command unfiltered.
-- Use `rtk gain`, `rtk gain --history`, and `rtk discover` to inspect savings and identify missed optimization opportunities.
-- If RTK is unavailable or its rewrite fails, run the original command normally; do not install or reconfigure RTK unless the user requests it.
+- Use `rtk gain` and `rtk gain --history` to inspect token savings.
+- If RTK is unavailable or fails, run the original command normally; do not install or reconfigure RTK unless the user requests it.
 <!-- RTK_END -->

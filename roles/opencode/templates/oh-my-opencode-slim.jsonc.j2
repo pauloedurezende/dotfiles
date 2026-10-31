@@ -6,49 +6,33 @@
   "autoUpdate": false,
   "multiplexer": { "type": "none" },
 
+  // Omitting "mcps" keeps slim's per-agent defaults (explorer: context7, gh_grep).
   "presets": {
     "openai": {
       "orchestrator": {
         "model": "{{ opencode_default_model }}",
-        "variant": "high",
-        "skills": ["*"],
-        "mcps": ["*", "!context7"]
-      },
-      "council": {
-        "model": "{{ opencode_reasoning_model }}",
-        "variant": "high",
-        "skills": [],
-        "mcps": []
+        "variant": "medium",
+        "skills": ["*"]
       },
       "oracle": {
-        "model": "{{ opencode_reasoning_model }}",
+        "model": "{{ opencode_default_model }}",
         "variant": "high",
-        "skills": ["simplify"],
-        "mcps": []
-      },
-      "librarian": {
-        "model": "{{ opencode_small_model }}",
-        "variant": "low",
-        "skills": [],
-        "mcps": ["context7", "gh_grep"]
+        "skills": ["simplify"]
       },
       "explorer": {
         "model": "{{ opencode_small_model }}",
         "variant": "low",
-        "skills": [],
-        "mcps": []
+        "skills": []
       },
       "designer": {
         "model": "{{ opencode_small_model }}",
         "variant": "medium",
-        "skills": [],
-        "mcps": []
+        "skills": []
       },
       "fixer": {
-        "model": "{{ opencode_small_model }}",
-        "variant": "high",
-        "skills": [],
-        "mcps": []
+        "model": "{{ opencode_default_model }}",
+        "variant": "low",
+        "skills": []
       }
     }
   }

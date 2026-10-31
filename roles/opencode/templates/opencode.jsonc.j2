@@ -85,11 +85,27 @@
     { "action": "shell", "resource": "git rev-parse *", "effect": "allow" },
     { "action": "shell", "resource": "git ls-files *", "effect": "allow" },
     { "action": "shell", "resource": "git branch --show-current *", "effect": "allow" },
+    // Explicit RTK usage gets the same inspection allowlist.
+    { "action": "shell", "resource": "rtk ls *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git status *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git diff *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git log *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git show *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git rev-parse *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git ls-files *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk git branch --show-current *", "effect": "allow" },
     { "action": "shell", "resource": "sudo *", "effect": "deny" },
     { "action": "shell", "resource": "rm -rf /*", "effect": "deny" },
     { "action": "shell", "resource": "rm -rf ~*", "effect": "deny" },
     { "action": "shell", "resource": "git push -f *", "effect": "deny" },
-    { "action": "shell", "resource": "git push --force *", "effect": "deny" }
+    { "action": "shell", "resource": "git push --force *", "effect": "deny" },
+    // RTK wrappers (rtk <cmd>, rtk bypass <cmd>, ...) must not evade these denials.
+    { "action": "shell", "resource": "rtk sudo *", "effect": "deny" },
+    { "action": "shell", "resource": "rtk * sudo *", "effect": "deny" },
+    { "action": "shell", "resource": "rtk *rm -rf /*", "effect": "deny" },
+    { "action": "shell", "resource": "rtk *rm -rf ~*", "effect": "deny" },
+    { "action": "shell", "resource": "rtk *git push -f *", "effect": "deny" },
+    { "action": "shell", "resource": "rtk *git push --force *", "effect": "deny" }
   ],
 
   "mcp": {

@@ -89,7 +89,7 @@
     dest: /usr/local/bin
     remote_src: true
     mode: '0755'
-    extra_opts: [--strip-components=1]
+    include: [rtk]
   become: true
   when: >-
     opencode_rtk_enabled and
