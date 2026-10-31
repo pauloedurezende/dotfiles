@@ -74,8 +74,9 @@
 - name: Download RTK binary for Linux
   ansible.builtin.get_url:
     url: >-
-      https://github.com/rtk-ai/rtk/releases/download/
-      v{{ opencode_rtk_latest_version }}/rtk-{{ opencode_rtk_arch }}.tar.gz
+      {{ 'https://github.com/rtk-ai/rtk/releases/download/v'
+         ~ opencode_rtk_latest_version
+         ~ '/rtk-' ~ opencode_rtk_arch ~ '.tar.gz' }}
     dest: "{{ dotfiles_home }}/.cache/rtk.tar.gz"
     mode: '0644'
   when: >-
