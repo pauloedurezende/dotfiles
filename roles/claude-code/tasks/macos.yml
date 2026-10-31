@@ -1,0 +1,5 @@
+---
+- name: Install RTK via Homebrew
+  community.general.homebrew:
+    name: rtk
+    state: present

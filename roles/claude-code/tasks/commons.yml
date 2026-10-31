@@ -1,0 +1,118 @@
+---
+- name: Install Claude Code via native installer
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL https://claude.ai/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: "{{ dotfiles_home }}/.local/bin/claude"
+
+- name: Install CodeGraph globally via npm
+  community.general.npm:
+    name: "@colbymchenry/codegraph"
+    global: true
+    state: present
+    executable: "{{ asdf_dir }}/shims/npm"
+  environment:
+    ASDF_DATA_DIR: "{{ asdf_dir }}"
+    PATH: "{{ claude_code_tool_path }}"
+  when: not ansible_check_mode
+
+- name: Create Claude Code configuration directory
+  ansible.builtin.file:
+    path: "{{ claude_code_config_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy statusline and completion sound scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ claude_code_config_dir }}/{{ item }}"
+    mode: '0755'
+    backup: true
+  loop: [statusline.sh, play-sound.sh]
+
+- name: Read Claude Code settings
+  ansible.builtin.slurp:
+    src: "{{ claude_code_config_dir }}/settings.json"
+  register: claude_code_settings_file
+  failed_when: false
+
+# RTK, CodeGraph and Claude Code itself also write to settings.json, so the
+# role's settings are merged in rather than replacing the file.
+- name: Merge role settings into Claude Code settings
+  ansible.builtin.copy:
+    content: "{{ claude_code_settings | to_nice_json(indent=2) }}\n"
+    dest: "{{ claude_code_config_dir }}/settings.json"
+    mode: '0644'
+    backup: true
+  vars:
+    claude_code_settings_current: >-
+      {{ ((claude_code_settings_file.content | default('') | b64decode
+           | trim) or '{}') | from_json }}
+    claude_code_settings: >-
+      {{ claude_code_settings_current
+         | combine(lookup('ansible.builtin.template', 'settings.json.j2')
+                   | from_json, recursive=true, list_merge='prepend_rp') }}
+  when: claude_code_settings != claude_code_settings_current
+
+- name: Configure RTK for Claude Code
+  ansible.builtin.command: rtk init --global --auto-patch
+  args:
+    chdir: "{{ dotfiles_home }}"
+  register: claude_code_rtk_init
+  changed_when: "'hook already present' not in claude_code_rtk_init.stdout"
+  environment:
+    PATH: "{{ claude_code_tool_path }}"
+
+# Claude Code checks permission rules against the command a hook returns, so
+# RTK must leave file reads alone: `cat .env` would otherwise become
+# `rtk read .env`, which the Read() deny rules do not match.
+- name: Keep RTK from rewriting file-read commands
+  community.general.ini_file:
+    path: >-
+      {{ dotfiles_home }}/{{ 'Library/Application Support'
+                             if is_macos else '.config' }}/rtk/config.toml
+    section: hooks
+    option: exclude_commands
+    value: '["cat", "head", "tail"]'
+    create: true
+    mode: '0644'
+
+- name: Configure CodeGraph for Claude Code
+  ansible.builtin.command: >-
+    codegraph install --target claude --location global --yes
+  register: claude_code_codegraph_install
+  changed_when: >-
+    claude_code_codegraph_install.stdout is search('Created|Updated|Removed')
+  environment:
+    PATH: "{{ claude_code_tool_path }}"
+
+- name: Register user-scope MCP servers
+  ansible.builtin.command:
+    argv:
+      - claude
+      - mcp
+      - add-json
+      - --scope
+      - user
+      - "{{ item.name }}"
+      - "{{ item.config | to_json }}"
+  loop:
+    - name: context7
+      config:
+        type: http
+        url: https://mcp.context7.com/mcp
+    - name: linear
+      config:
+        type: http
+        url: https://mcp.linear.app/mcp
+  loop_control:
+    label: "{{ item.name }}"
+  register: claude_code_mcp_add
+  changed_when: claude_code_mcp_add.rc == 0
+  failed_when: >-
+    claude_code_mcp_add.rc != 0 and
+    'already exists' not in claude_code_mcp_add.stderr
+  environment:
+    PATH: "{{ claude_code_tool_path }}"

@@ -1,0 +1,22 @@
+---
+- name: Install jq for the statusline script
+  ansible.builtin.apt:
+    name: jq
+    state: present
+  become: true
+
+- name: Install RTK from the latest GitHub release
+  ansible.builtin.unarchive:
+    src: >-
+      {{ 'https://github.com/rtk-ai/rtk/releases/latest/download/rtk-'
+         ~ ('x86_64-unknown-linux-musl'
+            if ansible_facts['architecture'] == 'x86_64'
+            else 'aarch64-unknown-linux-gnu')
+         ~ '.tar.gz' }}
+    dest: /usr/local/bin
+    remote_src: true
+    include: [rtk]
+    mode: '0755'
+    creates: /usr/local/bin/rtk
+  become: true
+  when: not ansible_check_mode

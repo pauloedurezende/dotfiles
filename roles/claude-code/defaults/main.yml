@@ -1,0 +1,15 @@
+---
+claude_code_enabled: true
+
+claude_code_config_dir: "{{ dotfiles_home }}/.claude"
+
+claude_code_tool_path: >-
+  {{
+    [
+      asdf_binary_install_path,
+      asdf_dir ~ '/shims',
+      nodejs_npm_global_prefix ~ '/bin',
+      homebrew_bin_path if is_macos else '/usr/local/bin',
+      ansible_facts['env']['PATH']
+    ] | join(':')
+  }}

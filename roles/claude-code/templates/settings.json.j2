@@ -1,0 +1,72 @@
+{#- Merged into ~/.claude/settings.json by tasks/commons.yml: these values win
+    and these list entries come first, while entries added by RTK, CodeGraph
+    or /config are kept. Removing a rule here does not remove it from the
+    file. Claude Code only accepts strict JSON, so comments stay in Jinja. -#}
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
+  "theme": "dark",
+  {# No Co-Authored-By trailer in commits and no footer in PRs. #}
+  "attribution": { "commit": "", "pr": "" },
+  "skipAutoPermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "{{ claude_code_config_dir }}/statusline.sh"
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ claude_code_config_dir }}/play-sound.sh",
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "defaultMode": "auto",
+    {# Read-only commands are approved natively, but RTK rewrites these to
+       `rtk ...`, which Claude Code no longer recognizes as read-only. A
+       match here makes RTK approve them itself, skipping the classifier. #}
+    "allow": [
+      "Bash(ls *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch --show-current *)"
+    ],
+    {# Auto mode reads working-directory files without asking. #}
+    "ask": [
+      "Read(*.pem)",
+      "Read(*.key)"
+    ],
+    {# Auto mode reads .env and any working-directory file without asking,
+       so secrets need explicit denies. A Read deny also blocks Edit and
+       Write, and a `!` rule carves its paths out of the rules before it.
+       Force pushes, destructive git commands and `rm` of critical paths
+       are already blocked by Claude Code and its auto mode classifier. #}
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Read(!.env.sample)",
+      "Read(!.env.template)",
+      "Read(secrets/**)",
+      "Read(.npmrc)",
+      "Read(.pypirc)",
+      "Read(.netrc)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.npmrc)",
+      "Read(~/.pypirc)",
+      "Read(~/.netrc)",
+      {# Not on the classifier's default block list. #}
+      "Bash(sudo *)"
+    ]
+  }
+}

@@ -67,6 +67,8 @@
       tags: [pnpm]
     - role: opencode
       tags: [opencode]
+    - role: claude-code
+      tags: [claude-code]
     - role: caddy
       tags: [caddy]
     - role: github-cli
